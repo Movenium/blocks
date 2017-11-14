@@ -1,0 +1,8 @@
+- load:
+    file: test/testBlockLoad.data
+
+- test:
+    default: {
+               "key1": "some test key",
+               "array": ["a", "b"]
+             }

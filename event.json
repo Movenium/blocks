@@ -1,0 +1,6 @@
+{
+  "httpMethod": "post",
+  "path": "/copy/236671",
+  "body": "{\"message\": \"uus\"}",
+  "headers": {"Authorization": "Bearer 1aae8463c6ef45a08cefcd2ea0f39c35be0be5c7o"}
+}

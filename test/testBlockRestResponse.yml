@@ -1,0 +1,10 @@
+- data:
+    data:
+      message: rest called
+
+- restResponse
+
+- test:
+    default:
+      statusCode: 200
+      body: "{\"message\":\"rest called\"}"

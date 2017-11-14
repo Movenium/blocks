@@ -1,0 +1,11 @@
+- data:
+    data: {"message": "test"}
+
+- test:
+    default: {"message": "test"}
+
+- data:
+    data: string
+
+- test:
+    default: string

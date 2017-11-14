@@ -1,0 +1,4 @@
+
+- moment:
+    currentDate: format YYYY-MM-DD
+    currentTime: format HH:mm
