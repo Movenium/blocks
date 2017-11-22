@@ -48,6 +48,14 @@ events:
 
 # Testing
 
+Install mocha and remember to update script test handler to package.json
+
+```
+"scripts": {
+  "test": "mocha"
+},
+```
+
 Pre-written mocha test handler
 
 ## Pre-written test/test.js

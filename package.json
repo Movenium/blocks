@@ -1,5 +1,5 @@
 {
-  "name": "blocks",
+  "name": "@vvsalmin/blocks",
   "version": "1.0.0",
   "description": "",
   "main": "blocks.js",
@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "app-root-dir": "^1.0.2",
+    "md5": "^2.2.1",
     "mongodb": "^2.2.31",
     "node-yaml": "^3.1.1",
     "request": "^2.81.0"

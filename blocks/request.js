@@ -55,7 +55,7 @@ class request extends block {
         this.capsuleAPIcall(_request, [url, options], function (error, response, body) {
             if (settings.dump)
                 console.log("response", body)
-            if (!error && (response.statusCode == 200 || response.statusCode == 201)) {
+            if ((!error && (response.statusCode == 200 || response.statusCode == 201)) || settings.allowError) {
                 callback(null, tryToParse(body));
             }
             else if (!error && body)

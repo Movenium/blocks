@@ -2,6 +2,18 @@
 var block = require('./block')
 var tools = require('../tools')
 
+/**
+ * usage:
+ *
+ * - if:
+ *    test:
+ *      eq:
+ *         - $testthis
+ *         - 12
+ * - then:
+ *     - otherblocks
+ */
+
 class _if extends block {
     run(settings, state, callback) {
 
@@ -44,9 +56,12 @@ class _if extends block {
     testThis (type, params) {
         if (type === "gt") return params[0] > params[1];
         if (type === "lt") return params[0] < params[1];
-        if (type === "eq") return params[0] == params[1];
+        if (type === "eq") return params[0] === params[1];
+        if (type === "neq") return params[0] !== params[1];
         if (type === "gte") return params[0] >= params[1];
         if (type === "lte") return params[0] <= params[1];
+        if (type === "exists") return params[0] ? true : false;
+        if (type === "notexists") return params[0] ? false : true;
     }
 }
 
