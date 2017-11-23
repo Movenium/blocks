@@ -220,14 +220,15 @@ module.exports._runBlock = (blockObj, state, callback) => {
 
 module.exports._requireJs = (file, callback) => {
 
-    const paths = ['./blocks/', this.rootdir + "/"];
+    const paths = ['./blocks/', this.rootdir + "/", this.rootdir + "/node_modules/@vvsalmin/blocks/blocks/"];
 
     for (const path of paths) {
+        //console.log("require", path + file)
         const required = this.tryRequire(path + file);
         if (required) return required;
     }
 
-    callback(new Error("Block '" + file + "' cannot be found"));
+    callback(new Error("Block '" + file + "' cannot be found. Searched from " + JSON.stringify(paths)));
 }
 
 module.exports.tryRequire = (path, callback) => {

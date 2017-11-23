@@ -1,5 +1,5 @@
 'use strict';
-var block = require('blocks').block;
+var block = require('../blocks').block;
 var moment = require('moment');
 
 class _moment extends block {

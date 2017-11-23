@@ -1,7 +1,7 @@
 'use strict';
 var block = require('./block')
 var crypto = require('crypto');
-var ReturnError = require('blocks').ReturnError
+var ReturnError = require('../blocks').ReturnError
 
 class data extends block {
     run(settings, state, callback) {

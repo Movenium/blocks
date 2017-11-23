@@ -1,6 +1,6 @@
 'use strict';
 var block = require('./block')
-var ReturnError = require('blocks').ReturnError
+var ReturnError = require('../blocks').ReturnError
 
 class dump extends block {
     run(settings, state, callback) {
