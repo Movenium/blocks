@@ -40,6 +40,11 @@ class restResponse extends block {
         const response = {
             statusCode: statusCode,
             body: JSON.stringify(body),
+            headers: {
+                "Access-Control-Allow-Credentials": true,
+                "Access-Control-Allow-Origin": "*",
+                "Content-Type": "application/json",
+            },
         };
 
         callback(null, response);
