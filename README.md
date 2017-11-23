@@ -7,7 +7,7 @@ npm install blocks --save
 ## Basic handler.js
 
 ```
-var blocks = require("blocks")
+var blocks = require("@vvsalmin/blocks")
 
 module.exports.hello = (event, context, callback) => {
 
@@ -25,7 +25,7 @@ module.exports.hello = (event, context, callback) => {
 
 ```
 'use strict';
-var block = require('blocks').block;
+var block = require('@vvsalmin/blocks').block;
 
 class _block extends block {
     run(settings, state, callback) {
