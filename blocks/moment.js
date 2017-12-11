@@ -12,8 +12,16 @@ class _moment extends block {
                 return moment().format();
             }, []));
 
-            for (let i = 0; i < parser.length; i += 2)
-                ret = ret[parser[i]](parser[i + 1]);
+            for (let i = 0; i < parser.length; i += 2) {
+                const param = parser[i + 1];
+                const params = param ? param.split(",") : []
+                try {
+                    ret = ret[parser[i]](...params);
+                } catch (e) {
+                    callback("Moment function '" + parser[i] + "' returned error: " + e.message);
+                    return;
+                }
+            }
 
             settings[key] = ret;
         }
