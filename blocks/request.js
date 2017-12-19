@@ -50,6 +50,9 @@ class request extends block {
         if (settings.dump)
             console.log("request", url, options)
 
+        if (settings.headers)
+            options.headers = settings.headers;
+
         if (method !== "get") options.method = method;
 
         this.capsuleAPIcall(_request, [url, options], function (error, response, body) {
