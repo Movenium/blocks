@@ -1,6 +1,6 @@
 'use strict';
 var block = require('../blocks').block;
-var moment = require('moment');
+var moment = require('moment-timezone');
 
 class _moment extends block {
     run(settings, state, callback) {
