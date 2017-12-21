@@ -128,13 +128,13 @@ module.exports.parseBlock = (block, state) => {
         block = blockName;
     }
 
-    const openedBlock = this.readBlock(block);
+    const openedBlock = this.readBlock(block, state);
 
     openedBlock.settings = settings;
     return openedBlock;
 }
 
-module.exports.readBlock = (block) => {
+module.exports.readBlock = (block, state) => {
 
     if (block.indexOf(" => ") !== -1) {
         const splitted_block = block.split(" => ");
@@ -169,8 +169,8 @@ module.exports.readBlock = (block) => {
         return {type: "request", url: block, output: output}
     }
 
-    if (Object.keys(this.dynamicBlocks).indexOf(block) !== -1) {
-        return {type: "dynamic", useblock: this.dynamicBlocks[block], output: output};
+    if (Object.keys(tools.get(state, '__dynamicBlocks')).indexOf(block) !== -1) {
+        return {type: "dynamic", useblock: state.__dynamicBlocks[block], output: output};
     }
 
     return {type: "js", file: block, output: output};
@@ -206,7 +206,8 @@ module.exports.parseSetting = (name, value, state) => {
 module.exports._runBlock = (blockObj, state, callback) => {
 
     if (blockObj.type === "creator") {
-        this.dynamicBlocks[blockObj.dynamic] = {type: "js", file: blockObj.block, settings: blockObj.settings};
+        if (typeof state.__dynamicBlocks === "undefined") state.__dynamicBlocks = {};
+        state.__dynamicBlocks[blockObj.dynamic] = {type: "js", file: blockObj.block, settings: blockObj.settings};
         callback(null, {});
     }
     else if (blockObj.type === "dynamic") {
