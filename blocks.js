@@ -18,6 +18,7 @@ class ReturnError extends Error {
 
 module.exports.ReturnError = ReturnError;
 module.exports.block = blockBase;
+module.exports.dynamicBlocks = {};
 
 module.exports.run = (blockList, state, callback, innercall = false) => {
 
@@ -135,6 +136,11 @@ module.exports.parseBlock = (block, state) => {
 
 module.exports.readBlock = (block) => {
 
+    if (block.indexOf(" => ") !== -1) {
+        const splitted_block = block.split(" => ");
+        return {type: "creator", block: splitted_block[0], dynamic: splitted_block[1], output: null};
+    }
+
     const blockArr = block.split(" > ");
     let output;
 
@@ -161,6 +167,10 @@ module.exports.readBlock = (block) => {
 
     if (block.match(/^https?:\/\//g)) {
         return {type: "request", url: block, output: output}
+    }
+
+    if (Object.keys(this.dynamicBlocks).indexOf(block) !== -1) {
+        return {type: "dynamic", useblock: this.dynamicBlocks[block], output: output};
     }
 
     return {type: "js", file: block, output: output};
@@ -194,7 +204,19 @@ module.exports.parseSetting = (name, value, state) => {
 }
 
 module.exports._runBlock = (blockObj, state, callback) => {
-    if (blockObj.type === "js") {
+
+    if (blockObj.type === "creator") {
+        this.dynamicBlocks[blockObj.dynamic] = {type: "js", file: blockObj.block, settings: blockObj.settings};
+        callback(null, {});
+    }
+    else if (blockObj.type === "dynamic") {
+        this._runBlock({
+            type: blockObj.useblock.type,
+            file: blockObj.useblock.file,
+            settings: Object.assign(blockObj.useblock.settings, blockObj.settings)
+        }, state, callback);
+    }
+    else if (blockObj.type === "js") {
         const _block = this._requireJs(blockObj.file, callback);
         if (!_block) return;
 
