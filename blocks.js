@@ -55,7 +55,7 @@ module.exports.run = (blockList, state, callback, innercall = false) => {
 
             state.default = response;
 
-            if (blockObj.type === "js" && blockObj.output) {
+            if ((blockObj.type === "js" || blockObj.type === "dynamic") && blockObj.output) {
                 state[blockObj.output] = response;
             }
 
