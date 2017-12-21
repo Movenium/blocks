@@ -10,12 +10,14 @@ npm install blocks --save
 var blocks = require("@vvsalmin/blocks")
 
 module.exports.hello = (event, context, callback) => {
-
-    blocks.run("<nameOfTheScript>.yml",{event: event}, (error, response) => {
-        if (error)
-            blocks.run(["consolelog", "restResponse"], {default: error}, callback);
-        else
-            callback(error, response);
+    let state = {event: event, env: process.env};
+    
+    blocks.run("server.yml",state, (error, response) => {
+        if (error) {
+            state.error = state.default = error;
+            blocks.run(["consolelog", "restResponse"], state, callback);
+        } else
+            callback(null, response);
     });
 };
 
