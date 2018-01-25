@@ -169,7 +169,7 @@ module.exports.readBlock = (block, state) => {
         return {type: "request", url: block, output: output}
     }
 
-    if (Object.keys(tools.get(state, '__dynamicBlocks')).indexOf(block) !== -1) {
+    if (tools.get(state, '__dynamicBlocks') && Object.keys(tools.get(state, '__dynamicBlocks')).indexOf(block) !== -1) {
         return {type: "dynamic", useblock: state.__dynamicBlocks[block], output: output};
     }
 
