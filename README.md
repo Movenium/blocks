@@ -16,6 +16,17 @@ https://serverless.com/framework/docs/providers/aws/guide/quick-start/
 
 https://github.com/dherault/serverless-offline
 
+### tl;dr
+`npm install serverless-offline --save-dev`
+
+add to `serverless.yml`
+```
+plugins:
+  - serverless-offline
+``` 
+
+use by typing `serverless offline start`
+
 ## Basic handler.js
 
 ```
