@@ -8,6 +8,10 @@ npm install blocks --save
 
 https://serverless.com/framework/docs/getting-started/
 
+and
+
+https://serverless.com/framework/docs/providers/aws/guide/quick-start/
+
 ## Basic handler.js
 
 ```
