@@ -12,6 +12,10 @@ and
 
 https://serverless.com/framework/docs/providers/aws/guide/quick-start/
 
+## Developing
+
+https://github.com/dherault/serverless-offline
+
 ## Basic handler.js
 
 ```
