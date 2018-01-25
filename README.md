@@ -1,7 +1,3 @@
-# Install
-
-npm install blocks --save
-
 # Usage with serverless.com
 
 ## install serverless
@@ -11,6 +7,10 @@ https://serverless.com/framework/docs/getting-started/
 and
 
 https://serverless.com/framework/docs/providers/aws/guide/quick-start/
+
+# Install
+
+npm install @vvsalmin/blocks --save
 
 ## Developing
 
