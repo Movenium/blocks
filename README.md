@@ -4,6 +4,10 @@ npm install blocks --save
 
 # Usage with serverless.com
 
+## install serverless
+
+https://serverless.com/framework/docs/getting-started/
+
 ## Basic handler.js
 
 ```
