@@ -3,9 +3,9 @@ var block = require('../blocks').block;
 var moment = require('moment-timezone');
 
 class _moment extends block {
-    run(settings, state, callback) {
-
+    run(settings, resolve, reject) {
         for (const key in settings) {
+            if (key === "_last") continue;
             const parser = settings[key].split(/ /);
 
             let ret = moment(this.capsuleAPIcall(() => {
@@ -18,7 +18,7 @@ class _moment extends block {
                 try {
                     ret = ret[parser[i]](...params);
                 } catch (e) {
-                    callback("Moment function '" + parser[i] + "' returned error: " + e.message);
+                    reject("Moment function '" + parser[i] + "' returned error: " + e.message);
                     return;
                 }
             }
@@ -26,7 +26,7 @@ class _moment extends block {
             settings[key] = ret;
         }
 
-        callback(null, settings)
+        resolve(settings)
     }
 }
 

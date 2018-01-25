@@ -3,8 +3,15 @@ var block = require('./block')
 var ReturnError = require('../blocks').ReturnError
 
 class dump extends block {
-    run(settings, state, callback) {
-        callback(new ReturnError(settings.dump || state.default, 200));
+    run(settings, resolve, reject) {
+
+        if (typeof settings.dump != "undefined")
+            reject(new ReturnError(settings.dump, 200));
+        else {
+            settings._last.then((back) => {
+                reject(new ReturnError(back, 200));
+            });
+        }
     }
 }
 

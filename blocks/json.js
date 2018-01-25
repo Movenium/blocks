@@ -2,18 +2,18 @@
 var block = require('./block')
 
 class json extends block {
-    run(settings, state, callback) {
+    run(settings, resolve, reject) {
 
         try {
             if (typeof settings.parse !== "undefined")
-                callback(null, JSON.parse(settings.parse));
+                resolve(JSON.parse(settings.parse));
             else if (typeof settings.stringify !== "undefined")
-                callback(null, JSON.stringify(settings.stringify));
+                resolve(JSON.stringify(settings.stringify));
             else
-                callback(new Error("give either parse or stringify setting"));
+                reject(new Error("give either parse or stringify setting"));
         }
         catch (e) {
-            callback(e);
+            reject(e);
         }
     }
 }

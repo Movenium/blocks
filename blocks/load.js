@@ -3,7 +3,7 @@ var block = require('./block')
 var fs = require('fs')
 
 class load extends block {
-    run(settings, state, callback) {
+    /*run(settings, state, callback) {
 
         const object = JSON.parse(fs.readFileSync(settings.file, 'utf8'))
 
@@ -25,7 +25,7 @@ class load extends block {
         }
 
         callback(null, object)
-    }
+    }*/
 }
 
 

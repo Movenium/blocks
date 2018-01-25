@@ -17,7 +17,9 @@ var block = require('./block')
 var ReturnError = require('../blocks').ReturnError
 
 class request extends block {
-    run(settings, state, callback) {
+    run(settings, resolve, reject) {
+
+        console.log("runnign request", settings)
 
         let options = {};
 
@@ -58,13 +60,14 @@ class request extends block {
         this.capsuleAPIcall(_request, [url, options], function (error, response, body) {
             if (settings.dump)
                 console.log("response", body)
+
             if ((!error && (response.statusCode == 200 || response.statusCode == 201)) || settings.allowError) {
-                callback(null, tryToParse(body));
+                resolve(tryToParse(body));
             }
             else if (!error && body)
-                callback(new ReturnError(tryToParse(body), response.statusCode));
+                reject(new ReturnError(tryToParse(body), response.statusCode));
             else
-                callback(new Error(error ? error : response))
+                reject(new Error(error ? error : response))
         });
     }
 

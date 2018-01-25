@@ -4,7 +4,7 @@ var crypto = require('crypto');
 var ReturnError = require('../blocks').ReturnError
 
 class data extends block {
-    run(settings, state, callback) {
+    run(settings, resolve, reject) {
 
         if (typeof settings.code !== "undefined") {
 
@@ -19,7 +19,7 @@ class data extends block {
             var result = cipher.update(JSON.stringify(data), 'utf8', 'hex')
             result += cipher.final('hex');
 
-            callback(null, {token: result})
+            resolve({token: result})
         }
         else if (settings.token) {
             var decipher = crypto.createDecipher('aes-256-ctr', settings.password);
@@ -30,10 +30,10 @@ class data extends block {
             let parsed = JSON.parse(dec);
             delete parsed.salt
 
-            callback(null, parsed)
+            resolve(parsed)
         }
         else
-            callback(new ReturnError("Authorization header needed", 401));
+            reject(new ReturnError("Authorization header needed", 401));
     }
 }
 

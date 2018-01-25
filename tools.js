@@ -20,3 +20,17 @@ module.exports.get = (object, path) => {
         return null;
     }
 }
+
+module.exports.resolveGet = (state, path) => {
+
+    return new Promise( (resolve, reject) => {
+        const pathArr = path.split(".")
+
+        Promise.resolve(this.get(state, pathArr[0])).then((firstStepResolved) => {
+            if (pathArr.length > 1)
+                resolve(this.get(firstStepResolved, pathArr.slice(1).join(".")))
+            else
+                resolve(firstStepResolved)
+        }, reject)
+    })
+}

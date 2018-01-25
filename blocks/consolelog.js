@@ -1,15 +1,22 @@
 'use strict';
 var block = require('./block')
 var ReturnError = require('../blocks').ReturnError
+var Promise = require("promise")
+var tools = require('../tools')
 
 class consolelog extends block {
-    run(settings, state, callback) {
-        console.log(settings.log || state.default);
+    run(settings, resolve, reject) {
+        Promise.resolve(typeof settings.log != "undefined" ? settings.log : null || this._last(settings)).then((message) => {
+            if (settings.label)
+                console.log(settings.label, message)
+            else
+                console.log(message);
 
-        if (settings.stop)
-            callback(new ReturnError(settings.log || state.default, 200));
-        else
-            callback(null, state.default)
+            if (settings.stop)
+                reject(message)
+            else
+                resolve(settings._last)
+        })
     }
 }
 

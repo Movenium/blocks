@@ -15,28 +15,28 @@ var tools = require('../tools')
  */
 
 class _if extends block {
-    run(settings, state, callback) {
+    run(settings, resolve, reject) {
 
         if (typeof settings.test === 'undefined') {
-            callback(new Error("If block must have a 'test' setting"));
+            reject(new Error("If block must have a 'test' setting"));
             return;
         }
 
         const testResult = this.testTest(settings.test);
 
 
-        if (testResult && settings.then) {
-            this.runBlockList(settings.then, state, callback);
+        if (testResult && settings._then) {
+            this.runBlockList(settings._then).then(resolve, reject);
             return;
         }
 
-        if (!testResult && settings.else) {
-            this.runBlockList(settings.else, state, callback);
+        if (!testResult && settings._else) {
+            this.runBlockList(settings._else).then(resolve, reject);
             return;
         }
 
 
-        callback(null, settings.default)
+        resolve(settings._last)
     }
 
     testTest(test) {

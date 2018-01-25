@@ -13,11 +13,22 @@
 
 var block = require('./block')
 var ReturnError = require('../blocks').ReturnError;
+var tools = require("../tools")
 
 class restResponse extends block {
-    run(settings, state, callback) {
+    run(settings, resolve, reject) {
 
-        let body = settings.body || (settings.message ? {message:  settings.message} : state.default);
+        if (settings.body || settings.message) {
+            this.makeReponse(settings.body || {message: settings.message}, settings, resolve)
+        }
+        else {
+            tools.resolveGet(settings, "_last").then((body) => {
+                this.makeResponse(body, settings, resolve)
+            }, reject)
+        }
+    }
+
+    makeResponse(body, settings, resolve) {
         let statusCode = settings.statusCode || 200;
 
         if (body instanceof ReturnError || ((body instanceof Error) && settings.dumpErrors)) {
@@ -47,8 +58,10 @@ class restResponse extends block {
             },
         };
 
-        callback(null, response);
+        resolve(response);
     }
+
+
 }
 
 module.exports = restResponse;

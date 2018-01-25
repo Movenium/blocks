@@ -10,12 +10,16 @@ class block {
         this.state = state;
     }
 
-    run(settings, state, callback) {
-        callback("Base class 'block' cannot be used directly");
+    run(settings, resolve, reject) {
+        reject("Base class 'block' cannot be used directly")
     }
 
-    runBlockList(blockList, state, callback) {
-        blocks.run(blockList, state, callback, true);
+    runBlockList(blockList) {
+        return blocks.run(blockList, this.state);
+    }
+
+    _last(settings) {
+        return tools.resolveGet(settings, "_last")
     }
 
     testMode () {

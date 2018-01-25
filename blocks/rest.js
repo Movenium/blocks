@@ -4,29 +4,29 @@ var tools = require('../tools')
 var ReturnError = require('../blocks').ReturnError;
 
 class rest extends block {
-    run(settings, state, callback) {
+    run(settings, resolve, reject) {
 
-        const event = settings.event || tools.get(state, "event");
+        const event = settings.event// || tools.get(state, "event");
 
         if (!settings.routes || typeof settings.routes[Symbol.iterator] !== 'function') {
-            callback(new Error("settings.routes must be given as array"));
+            reject(new Error("settings.routes must be given as array"));
             return;
         }
 
         for (const route of settings.routes) {
             if (!route.method) {
-                callback(new Error("routes must have methods"));
+                reject(new Error("routes must have methods"));
                 return;
             }
             const isThisRoute = this.isThisRoute(route, event);
             if (isThisRoute) {
-                state.default = state.rest = isThisRoute;
-                this.runBlockList(route.run, state, callback);
+                //state.default = state.rest = isThisRoute;
+                this.runBlockList(route._run).then(resolve, reject);
                 return;
             }
         }
 
-        callback(new ReturnError("Route wasn't found", 404));
+        reject(new ReturnError("Route wasn't found", 404));
     }
 
     isThisRoute(route, event) {
