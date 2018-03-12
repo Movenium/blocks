@@ -1,6 +1,15 @@
 'use strict';
 var block = require('./block')
 
+/**
+ * Parsing:
+ *   - json:
+ *       parse: $event.body
+ *
+ * Stringifying:
+ *   - json:
+ *       stringify: $somearray
+ */
 class json extends block {
     run(settings, state, callback) {
 
