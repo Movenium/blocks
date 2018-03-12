@@ -10,7 +10,7 @@ https://serverless.com/framework/docs/providers/aws/guide/quick-start/
 
 # Install
 
-npm install @vvsalmin/blocks --save
+npm install @movenium/blocks --save
 
 ## Developing
 
@@ -30,7 +30,7 @@ use by typing `serverless offline start`
 ## Basic handler.js
 
 ```
-var blocks = require("@vvsalmin/blocks")
+var blocks = require("@movenium/blocks")
 
 module.exports.hello = (event, context, callback) => {
     let state = {event: event, env: process.env};
@@ -50,7 +50,7 @@ module.exports.hello = (event, context, callback) => {
 
 ```
 'use strict';
-var block = require('@vvsalmin/blocks').block;
+var block = require('@movenium/blocks').block;
 
 class _block extends block {
     run(settings, state, callback) {
