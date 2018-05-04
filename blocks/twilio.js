@@ -1,5 +1,5 @@
 'use strict';
-var block = require('@vvsalmin/blocks').block;
+var block = require('@movenium/blocks').block;
 var twilio = require('twilio');
 
 class _block extends block {

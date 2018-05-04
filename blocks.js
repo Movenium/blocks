@@ -243,7 +243,7 @@ module.exports._runBlock = (blockObj, state, callback) => {
 
 module.exports._requireJs = (file, callback) => {
 
-    const paths = ['./blocks/', this.rootdir + "/", this.rootdir + "/node_modules/@vvsalmin/blocks/blocks/"];
+    const paths = ['./blocks/', this.rootdir + "/", this.rootdir + "/node_modules/@movenium/blocks/blocks/"];
 
     for (const path of paths) {
         //console.log("require", path + file)

@@ -1,6 +1,6 @@
 {
   "name": "@movenium/blocks",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "https://serverless.com/framework/docs/getting-started/",
   "main": "blocks.js",
   "scripts": {
