@@ -1,283 +1,94 @@
 'use strict';
+var yaml = require('node-yaml');
+var isPromise = require('./tools').isPromise
 
-var fs = require('fs');
-var yaml = require("node-yaml")
-var tools = require('./tools')
-var blockBase = require("./blocks/block")
+class blocks {
 
-var moment;
+    constructor(logger, settings = {}, depth = 0) {
+        this.state = settings
+        this.logger = logger
+        this.depth = depth + 1
 
-class ReturnError extends Error {
-    constructor(mixed, errorcode) {
-        super(mixed)
-        if (typeof mixed === "object") this.response = mixed
-        this.errorcode = errorcode;
-        Error.captureStackTrace(this, ReturnError)
-    }
-}
-
-module.exports.ReturnError = ReturnError;
-module.exports.block = blockBase;
-module.exports.dynamicBlocks = {};
-
-module.exports.run = (blockList, state, callback, innercall = false) => {
-
-    if (!this.rootdir) {
-        this.rootdir = require('app-root-dir').get();
+        this.debug = {}
     }
 
-    if (!innercall) {
-        if (typeof blockList === "string")
-            this.initialBlockList = blockList;
-        this.checkBlocksHeaders(state);
+    run(blockObj, settings = {}) {
+        return this["run_" + this.getTypeOf(blockObj)](blockObj, settings)
     }
 
-    try {
-
-        if (!blockList) {
-            callback(null, null);
-            return;
+    getTypeOf(blockObj) {
+        if (typeof blockObj === "string") {
+            if (blockObj.match(/.yml$/g)) return "yaml"
+            return "js"
         }
 
-        if (typeof blockList !== "object")
-            blockList = [blockList]
-
-        const block = blockList.shift();
-
-        const blockObj = this.parseBlock(block, state);
-
-        const useCallback = (error, response) => {
-
-            if (error) {
-                callback(error);
-                return;
-            }
-
-            state.default = response;
-
-            if ((blockObj.type === "js" || blockObj.type === "dynamic") && blockObj.output) {
-                state[blockObj.output] = response;
-            }
-
-            if (blockList.length > 0) {
-                this.run(blockList, state, callback, true);
-            }
-            else {
-                if (!innercall) {
-                    this.saveRecordingToFile(state, state.default, this.initialBlockList);
-                }
-                callback(null, response);
-            }
-        };
-
-        this._runBlock(blockObj, state, useCallback);
+        return "list"
     }
-    catch (e) {
-        this.handleError(e, callback);
+
+    run_yaml(filename, settings) {
+        settings.filename = "../" + filename
+        return this.run_js("_yaml", settings)
     }
-}
 
-module.exports.saveRecordingToFile = (state, response, blockListToTest) => {
+    run_list(blockList) {
+        let promises = []
+        blockList.forEach((blockObj) => {
+            this.log("execute " + JSON.stringify(blockObj))
 
-    if (!tools.get(state, "_recording")) return;
+            const fileObj = this.getFileObj(blockObj)
+            const ret = this.run(fileObj.filename, fileObj.settings)
+            this.add_state(fileObj.saveto, ret)
+            promises.push(ret)
+            this.logger.runned(fileObj, ret, this.depth)
+        })
 
-    if (!blockListToTest) throw new Error("Only support type for test recording is yml for now");
+        // we wan't to wait all the possible promises resolves before continuing
+        // if all promises are not waited "late rejections" might cause errors
+        return new Promise((resolve, reject) => {
+            Promise.all(promises).then((resolved) => {
+                resolve(resolved[resolved.length - 1])
+            }, reject)
+        })
+    }
 
-    const stream = fs.createWriteStream(tools.get(state, "_recording"));
-
-    if (!state._recorded) state._recorded = {};
-
-    state._recorded.response = response;
-
-    if (tools.get(state, 'event')) state._recorded.event = tools.get(state, 'event');
-
-    const testarray = [
-        {
-            "data > _recorded": {data: tools.get(state, "_recorded")}
-        },
-        {
-            "data > event": {
-                "data": "$_recorded.event"
-            }
-        },
-        blockListToTest,
-        {
-            "test": {
-                "default": "$_recorded.response"
-            }
+    getFileObj(blockObj) {
+        let key, filename, saveto = null, settings = {}
+        if (typeof blockObj === "string")
+            key =  blockObj
+        else {
+            key = Object.keys(blockObj)[0]
+            settings = blockObj[key]
         }
-    ];
 
+        const splittedKey = key.split(" > ")
 
-    stream.once('open', function(fd) {
-        stream.write(JSON.stringify(testarray));
-        stream.end();
-    });
-}
+        if (splittedKey.length > 1) {
+            filename = splittedKey[0]
+            saveto = splittedKey[1]
+        }
+        else {
+            filename = key
+            // get 'userActivity' out of 'routes/userActivity.yml'
+            saveto = key.split(".")[0].split("/").pop()
+        }
 
-module.exports.parseBlock = (block, state) => {
-
-    let settings = {};
-
-    // if its object read settings
-    if (typeof block === "object") {
-        const keys = Object.keys(block);
-        const blockName = keys[0];
-        settings = this.parseSettings(block[blockName], state)
-        // real name of the block after getting settings
-        block = blockName;
+        return {filename: filename, saveto: saveto, settings: settings}
     }
 
-    const openedBlock = this.readBlock(block, state);
-
-    openedBlock.settings = settings;
-    return openedBlock;
-}
-
-module.exports.readBlock = (block, state) => {
-
-    if (block.indexOf(" => ") !== -1) {
-        const splitted_block = block.split(" => ");
-        return {type: "creator", block: splitted_block[0], dynamic: splitted_block[1], output: null};
+    run_js(filename, settings) {
+        const path = filename.startsWith("/") ? "./node_modules/@movenium/blocks/blocks" : "./blocks/"
+        let js = require(path + filename)
+        return (new js(this, filename, settings))._run()
     }
 
-    const blockArr = block.split(" > ");
-    let output;
-
-    if (blockArr.length === 2) {
-        block = blockArr[0];
-        output = blockArr[1];
-    }
-    else {
-        output = block;
+    add_state(name, values) {
+        if (typeof this.state[name] !== "undefined") throw new Error("Cannot save to '" + name + "' already in use")
+        this.state[name] = values
     }
 
-    if (output.indexOf("/") !== -1) {
-        output = output.substring(output.lastIndexOf('/') + 1);
-    }
-
-    if (block.match(/.json$/g)) {
-        return {type: "blockList", "list": JSON.parse(fs.readFileSync(this.rootdir + "/" + block, 'utf8'))};
-    }
-
-    if (block.match(/.yml$/g)) {
-        //const filename = block.substring(0,1) === "." ? block : "../../" + block;
-        return {type: "blockList", "list": yaml.readSync(this.rootdir + "/" + block, {encoding: "utf8", schema: yaml.schema.defaultSafe})}
-    }
-
-    if (block.match(/^https?:\/\//g)) {
-        return {type: "request", url: block, output: output}
-    }
-
-    if (tools.get(state, '__dynamicBlocks') && Object.keys(tools.get(state, '__dynamicBlocks')).indexOf(block) !== -1) {
-        return {type: "dynamic", useblock: state.__dynamicBlocks[block], output: output};
-    }
-
-    return {type: "js", file: block, output: output};
-}
-
-module.exports.parseSettings = (settings, state) => {
-
-    if (!settings) return null;
-
-    for (const key of Object.keys(settings)) {
-        settings[key] = this.parseSetting(key, settings[key], state);
-    }
-
-    return settings;
-}
-
-module.exports.parseSetting = (name, value, state) => {
-
-    if (typeof value === "string" && value.match(/^\$/g)) {
-
-        if (value.match(/^\$\$/g))
-            return value.substring(1)
-        else
-            return tools.get(state, value.substring(1))
-    }
-    else if (typeof value === "object") {
-        return this.parseSettings(value, state);
-    }
-
-    return value;
-}
-
-module.exports._runBlock = (blockObj, state, callback) => {
-
-    if (blockObj.type === "creator") {
-        if (typeof state.__dynamicBlocks === "undefined") state.__dynamicBlocks = {};
-        state.__dynamicBlocks[blockObj.dynamic] = {type: "js", file: blockObj.block, settings: blockObj.settings};
-        callback(null, {});
-    }
-    else if (blockObj.type === "dynamic") {
-        this._runBlock({
-            type: blockObj.useblock.type,
-            file: blockObj.useblock.file,
-            settings: Object.assign(blockObj.useblock.settings, blockObj.settings)
-        }, state, callback);
-    }
-    else if (blockObj.type === "js") {
-        const _block = this._requireJs(blockObj.file, callback);
-        if (!_block) return;
-
-        if (typeof _block.run === "function")
-            _block.run(blockObj.settings, state, callback);
-        else
-            (new _block(state)).run(blockObj.settings, state, callback);
-    }
-    else if (blockObj.type === "blockList") {
-        this.run(blockObj.list, state, callback, true);
-    }
-    else if (blockObj.type === "request") {
-        let settings = blockObj.settings;
-        settings.url = blockObj.url;
-        
-        let block = {};
-        block["request" + (blockObj.output ? " > " + blockObj.output : "")] = settings;
-        this.run([block], state, callback, true);
-    }
-    else
-        callback(new Error("Unknown block type: '" + blockObj.type + "'"));
-}
-
-module.exports._requireJs = (file, callback) => {
-
-    const paths = ['./blocks/', this.rootdir + "/", this.rootdir + "/node_modules/@movenium/blocks/blocks/"];
-
-    for (const path of paths) {
-        //console.log("require", path + file)
-        const required = this.tryRequire(path + file);
-        if (required) return required;
-    }
-
-    callback(new Error("Block '" + file + "' cannot be found. Searched from " + JSON.stringify(paths)));
-}
-
-module.exports.tryRequire = (path, callback) => {
-    try {
-        return require(path);
-    }
-    catch (e) {
-        if (e instanceof Error && e.code === "MODULE_NOT_FOUND")
-            return null;
-        else
-            throw e;
+    log(str, severity = "info", prefix = "") {
+        this.logger.log(str, severity, Array(this.depth).join("    ") + prefix)
     }
 }
 
-module.exports.handleError = (error, callback) => {
-    console.log("error cauth")
-    if (error instanceof this.ReturnError)
-        callback(error);
-    else
-        callback(error);
-}
-
-module.exports.checkBlocksHeaders = (state) => {
-    const headers = tools.get(state, "event.headers");
-
-    if (tools.get(headers, 'X-blocks-record')) {
-        state._recording = "./test/" + tools.get(headers, 'X-blocks-record')
-    }
-}
+module.exports = blocks;

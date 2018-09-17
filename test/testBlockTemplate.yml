@@ -1,7 +1,0 @@
-- template:
-    template: this {first} be {second}.
-    first: should
-    second: parsed
-
-- test:
-    default: this should be parsed.

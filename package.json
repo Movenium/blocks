@@ -1,36 +1,14 @@
 {
-  "name": "@movenium/blocks",
-  "version": "1.0.22",
-  "description": "https://serverless.com/framework/docs/getting-started/",
-  "main": "blocks.js",
+  "name": "blocks2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
   "scripts": {
-    "test": "mocha"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "app-root-dir": "^1.0.2",
-    "md5": "^2.2.1",
-    "moment": "^2.19.2",
-    "moment-timezone": "^0.5.14",
-    "mongodb": "^2.2.31",
-    "node-yaml": "^3.1.1",
-    "request": "^2.81.0"
-  },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "md5": "^2.2.1",
-    "mocha": "^3.5.3"
-  },
-  "directories": {
-    "test": "test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Movenium/blocks.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Movenium/blocks/issues"
-  },
-  "homepage": "https://github.com/Movenium/blocks#readme"
+    "serverless-offline": "^3.25.11"
+  }
 }

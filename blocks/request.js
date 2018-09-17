@@ -1,86 +1,39 @@
 'use strict';
+var block = require('./block');
+var request = require('request');
 
-/**
- * Make http request to url and return response
- *
- * settings:
- *   - url: full url for request. Ie: https://google.com
- *   - method: [get, post, put, delete]
- *   - bearer: authenticate with bearer token. Give either with initial 'Bearer ' or without it.
- * @type {request}
- * @private
- */
+class _block extends block {
+    run() {
+        return new Promise((resolve, reject) => {
 
+            let headers = {}
+            if (this.exists("bearer")) headers.Authorization = this.get("bearer")
 
-var _request = require('request');
-var block = require('./block')
-var ReturnError = require('../blocks').ReturnError
+            var options = {
+                url: this.get("url") + this.get("path", ""),
+                headers: headers
+            };
 
-class request extends block {
-    run(settings, state, callback) {
+            request(options, (error, response, body) => {
 
-        let options = {};
+                if (error) return reject(error)
+                if (!response) return reject("noresponse")
+                if (response.statusCode != 200 && response.statusCode != 201) return reject(body)
 
-        if (settings.bearer) options.auth = {bearer: settings.bearer.substring(0, 7) === "Bearer " ? settings.bearer.substring(7) : settings.bearer}
+                let ret = {
+                    statusCode: response.statusCode,
+                    body: body,
+                    headers: response.headers
+                }
+                if (response.headers['content-type'] === "application/json")
+                    ret.json = JSON.parse(body);
 
-        const method = settings.method || "get";
+                resolve(ret)
 
-        let url = settings.url;
+            });
+        })
 
-        if (settings.path && typeof settings.path === "object")
-            url += settings.path.join("/")
-        else if (settings.path)
-            url += settings.path
-
-        if (settings.data && method !== "get") {
-            options.body = JSON.stringify(settings.data)
-        }
-        else if (settings.data && method === "get") {
-            let queryArr = [];
-            for (const key in settings.data) queryArr.push(key + "=" +settings.data[key]);
-            url += "?" + queryArr.join("&");
-        }
-
-        if (settings.formData) {
-            options.formData = settings.formData
-        }
-
-        const tryToParse = this.tryToParse;
-
-        if (settings.dump)
-            console.log("request", url, options)
-
-        if (settings.headers)
-            options.headers = settings.headers;
-
-        if (method !== "get") options.method = method;
-
-        this.capsuleAPIcall(_request, [url, options], function (error, response, body) {
-            if (settings.dump)
-                console.log("response", body)
-            if ((!error && (response.statusCode == 200 || response.statusCode == 201)) || settings.allowError) {
-                callback(null, tryToParse(body));
-            }
-            else if (!error && body)
-                callback(new ReturnError(tryToParse(body), response.statusCode));
-            else
-                callback(new Error(error ? error : response))
-        });
-    }
-
-    tryToParse(str) {
-
-        if (typeof str === "object") return str;
-
-        try {
-            const json = JSON.parse(str);
-            return json;
-        }
-        catch (e) {
-            return str;
-        }
     }
 }
 
-
-module.exports = request;
+module.exports = _block;

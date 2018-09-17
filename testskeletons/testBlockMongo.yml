@@ -1,5 +1,0 @@
-- mongo:
-    url: mongodb://development:H0yeXSLFynEct39D@testanddev-shard-00-00-l8ijy.mongodb.net:27017,testanddev-shard-00-01-l8ijy.mongodb.net:27017,testanddev-shard-00-02-l8ijy.mongodb.net:27017/veikkokehitys?ssl=true&replicaSet=testanddev-shard-0&authSource=admin
-    collection: test
-    action: find
-    id: 59c333bbcf11190bf0a2557c

@@ -1,69 +1,70 @@
 'use strict';
-var block = require('./block')
-var tools = require('../tools')
+var block = require('./block');
+const isYaml = require("../tools").isYaml
 
 /**
- * usage:
+ * EXAMPLE
  *
  * - if:
- *    test:
- *      eq:
- *         - $testthis
- *         - 12
- * - then:
- *     - otherblocks
+ *     test: $data
+ *     equals: 10
+ *     then: data is 10
+ *     else: data is not 10
+ *
+ *   tests: equals, notequals, gt, gte, lt, lte
+ *
+ *  - if:
+ *      not: $data
+ *      then: no data
  */
 
-class _if extends block {
-    run(settings, state, callback) {
+class _block extends block {
+    run() {
+        if (this.exists("not")) {
 
-        if (typeof settings.test === 'undefined') {
-            callback(new Error("If block must have a 'test' setting"));
-            return;
+            if (!this.get("not"))
+                return this.setOrRun(this.get("then"))
+        }
+        else if (this.test(this.get("test"))) {
+            return this.setOrRun(this.get("then"))
+        } else if (this.exists("else")) {
+            return this.setOrRun(this.get("else"))
         }
 
-        const testResult = this.testTest(settings.test);
-
-
-        if (testResult && settings.then) {
-            this.runBlockList(settings.then, state, callback);
-            return;
-        }
-
-        if (!testResult && settings.else) {
-            this.runBlockList(settings.else, state, callback);
-            return;
-        }
-
-
-        callback(null, settings.default)
+        return false
     }
 
-    testTest(test) {
+    setOrRun(value) {
+        if (typeof value !== "object" && !isYaml(value))
+            return value
+        else
+            return this.runBlockList(value)
+    }
 
-        if (test && typeof test === "object") {
-            const testThese = Object.keys(test);
-            let allOk = true;
-            for (const key of testThese) {
-                if (!this.testThis(key, test[key])) allOk = false;
-            }
-            return allOk;
+    test(value) {
+
+        if (this.exists("equals")) {
+            return this.get("equals") === value
+        }
+        else if (this.exists("notequals")) {
+            return this.get("notequals") !== value
+        }
+        else if (this.exists("gt")) {
+            return this.get("gt") < value
+        }
+        else if (this.exists("gte")) {
+            return this.get("gte") <= value
+        }
+        else if (this.exists("lt")) {
+            return this.get("lt") > value
+        }
+        else if (this.exists("lte")) {
+            return this.get("lte") >= value
         }
         else
-            return test
-    }
+            return value ? true : false
 
-    testThis (type, params) {
-        if (type === "gt") return params[0] > params[1];
-        if (type === "lt") return params[0] < params[1];
-        if (type === "eq") return params[0] === params[1];
-        if (type === "neq") return params[0] !== params[1];
-        if (type === "gte") return params[0] >= params[1];
-        if (type === "lte") return params[0] <= params[1];
-        if (type === "exists") return params[0] ? true : false;
-        if (type === "notexists") return params[0] ? false : true;
     }
 }
 
-
-module.exports = _if;
+module.exports = _block;

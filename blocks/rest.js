@@ -1,32 +1,24 @@
 'use strict';
 var block = require('./block')
 var tools = require('../tools')
-var ReturnError = require('../blocks').ReturnError;
 
-class rest extends block {
-    run(settings, state, callback) {
+class _block extends block {
+    run() {
 
-        const event = settings.event || tools.get(state, "event");
+        const event = this.get("event")
 
-        if (!settings.routes || typeof settings.routes[Symbol.iterator] !== 'function') {
-            callback(new Error("settings.routes must be given as array"));
-            return;
-        }
+        if (!this.exists("routes")) throw new Error("Routes must be given")
 
-        for (const route of settings.routes) {
-            if (!route.method) {
-                callback(new Error("routes must have methods"));
-                return;
-            }
+        for (const route of this.get("routes")) {
+            if (!route.method) throw new Error("routes must have methods");
+
             const isThisRoute = this.isThisRoute(route, event);
             if (isThisRoute) {
-                state.default = state.rest = isThisRoute;
-                this.runBlockList(route.run, state, callback);
-                return;
+                return this.runBlockList(route.run)
             }
         }
 
-        callback(new ReturnError("Route wasn't found", 404));
+        throw new Error("Route wasn't found");
     }
 
     isThisRoute(route, event) {
@@ -109,4 +101,4 @@ class rest extends block {
 }
 
 
-module.exports = rest;
+module.exports = _block;

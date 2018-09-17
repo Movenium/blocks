@@ -3,7 +3,7 @@ var block = require('./block');
 
 class _block extends block {
     run() {
-        this.log(this.get("dump"), "dump")
+        throw new Error(typeof this.settings === "string" ? this.settings : "error thrown by error block")
     }
 }
 

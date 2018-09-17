@@ -1,11 +1,10 @@
 'use strict';
-var block = require('./block')
+var block = require('./block');
 
-class data extends block {
-    run(settings, state, callback) {
-        callback(null, settings.data)
+class _block extends block {
+    run() {
+        return this.settings
     }
 }
 
-
-module.exports = data;
+module.exports = _block;
