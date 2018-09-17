@@ -6,7 +6,7 @@ var yaml = require('node-yaml');
 
 class _block extends block {
     run() {
-        const blockObj = yaml.readSync(this.get("filename"), {encoding: "utf8", schema: yaml.schema.defaultSafe})
+        const blockObj = yaml.readSync(this.blocks.rootdir + this.get("filename"), {encoding: "utf8", schema: yaml.schema.defaultSafe})
 
         try {
             const ret = (new blocks(this.blocks.logger, this.settings, this.blocks.depth)).run(blockObj, this.settings)

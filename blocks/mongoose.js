@@ -50,7 +50,7 @@ class _block extends block {
     }
 
     createSchemas(filename) {
-        const schemas = yaml.readSync("../" + filename, {encoding: "utf8", schema: yaml.schema.defaultSafe})
+        const schemas = yaml.readSync(this.blocks.rootdir + filename, {encoding: "utf8", schema: yaml.schema.defaultSafe})
 
         for (let collection of Object.keys(schemas))
             this.createSchema(collection, schemas[collection])

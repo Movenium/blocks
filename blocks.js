@@ -10,6 +10,7 @@ class blocks {
         this.depth = depth + 1
 
         this.debug = {}
+        this.rootdir = require('app-root-dir').get() + "/"
     }
 
     run(blockObj, settings = {}) {
@@ -26,7 +27,7 @@ class blocks {
     }
 
     run_yaml(filename, settings) {
-        settings.filename = "../" + filename
+        settings.filename = filename
         return this.run_js("_yaml", settings)
     }
 
