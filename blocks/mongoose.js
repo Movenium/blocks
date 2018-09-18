@@ -6,6 +6,12 @@ var yaml = require('node-yaml');
 
 class _block extends block {
     run() {
+
+        if (this.get("clearModels", false)) {
+            mongoose.models = {};
+            mongoose.modelSchemas = {};
+        }
+
         return new Promise((resolve,reject) => {
             mongoose.connect(this.get("url"), (err) => {
                 //reject(err)
