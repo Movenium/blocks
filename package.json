@@ -1,7 +1,7 @@
 {
-  "name": "blocks2",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@movenium/blocks",
+  "version": "2.0.0",
+  "description": "https://serverless.com/framework/docs/getting-started/",
   "main": "handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
