@@ -4,13 +4,15 @@
 
 https://serverless.com/framework/docs/getting-started/
 
-and
+and create new project
 
 https://serverless.com/framework/docs/providers/aws/guide/quick-start/
 
 # Install
 
-npm install @movenium/blocks --save
+init your new project with `npm init`
+
+install blocks `npm install @movenium/blocks --save`
 
 ## Developing
 
@@ -19,7 +21,17 @@ https://github.com/dherault/serverless-offline
 ### tl;dr
 `npm install serverless-offline --save-dev`
 
-add to `serverless.yml`
+#### Changes to serverless.yml
+
+modify events (and uncomment)
+```
+events:
+    - http:
+        path: /{dummy}
+        method: any
+```
+
+add to end of the file
 ```
 plugins:
   - serverless-offline
@@ -30,18 +42,25 @@ use by typing `serverless offline start`
 ## Basic handler.js
 
 ```
-var blocks = require("@movenium/blocks")
+'use strict';
+
+var blocks = require("@movenium/blocks/blocks");
+var logger = require("@movenium/blocks/logger");
 
 module.exports.hello = (event, context, callback) => {
-    let state = {event: event, env: process.env};
+    const _logger = new logger();
     
-    blocks.run("server.yml",state, (error, response) => {
-        if (error) {
-            state.error = state.default = error;
-            blocks.run(["consolelog", "restResponse"], state, callback);
-        } else
-            callback(null, response);
-    });
+    (new blocks(_logger)).run("server2.yml", {event: event}).then((response) => {
+        callback(null, response);
+    }, (reason) => {
+        const response = {
+            statusCode: 400,
+            body: JSON.stringify({message: reason.message, meta: _logger.getLog(), stack: reason.stack}),
+        };
+
+        callback(null, response);
+    })
+
 };
 
 ```
@@ -50,25 +69,16 @@ module.exports.hello = (event, context, callback) => {
 
 ```
 'use strict';
-var block = require('@movenium/blocks').block;
+var block = require('@movenium/block/block');
 
 class _block extends block {
-    run(settings, state, callback) {
-        callback(null, state.default)
+    run() {
+        return JSON.parse(this.settings)
     }
 }
 
 module.exports = _block;
 ``` 
-
-## Changes to serverless.yml
-
-```
-events:
-    - http:
-        path: /{dummy}
-        method: any
-```
 
 
 # Testing
