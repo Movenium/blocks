@@ -77,7 +77,7 @@ class blocks {
     }
 
     run_js(filename, settings) {
-        const path = filename.startsWith("/") ? "./node_modules/@movenium/blocks/blocks" : "./blocks/"
+        const path = filename.startsWith("/") ? this.rootdir + "blocks" : "./blocks/"
         let js = require(path + filename)
         return (new js(this, filename, settings))._run()
     }

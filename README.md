@@ -69,11 +69,11 @@ module.exports.hello = (event, context, callback) => {
 
 ```
 'use strict';
-var block = require('@movenium/block/block');
+var block = require('@movenium/blocks/block');
 
 class _block extends block {
     run() {
-        return JSON.parse(this.settings)
+        <your code here!>
     }
 }
 
