@@ -8,6 +8,10 @@ and create new project
 
 https://serverless.com/framework/docs/providers/aws/guide/quick-start/
 
+### tl;dr
+
+`serverless create --template aws-nodejs --path my-service`
+
 # Install
 
 init your new project with `npm init`
@@ -50,7 +54,7 @@ var logger = require("@movenium/blocks/logger");
 module.exports.hello = (event, context, callback) => {
     const _logger = new logger();
     
-    (new blocks(_logger)).run("server2.yml", {event: event}).then((response) => {
+    (new blocks(_logger)).run("server.yml", {event: event}).then((response) => {
         callback(null, response);
     }, (reason) => {
         const response = {
@@ -69,16 +73,55 @@ module.exports.hello = (event, context, callback) => {
 
 ```
 'use strict';
-var block = require('@movenium/blocks/block');
+var block = require('@movenium/blocks/blocks/block');
 
 class _block extends block {
     run() {
-        <your code here!>
+        // <your code here!>
     }
 }
 
 module.exports = _block;
 ``` 
+
+# Setting resolver
+
+When block has settings all of them are waited and resolved before calling block's run method.
+
+```
+- data: 123
+```
+
+resolves to: `123`
+
+```
+- data: $another.something
+```
+
+resolves to: `"what ever is found from state.another.something"`
+ 
+if state.another.something is promise it will be resolved automatically and value will be the
+resolved value.
+
+```
+- data:
+    test: 123
+    test2: $another.something
+```
+
+resolves to: `{test: 123, test2: "what ever is found from state.another.something"}`
+ 
+```
+- data:
+    test: 
+      sub: $wont_be_resolved
+    $test2:
+      sub: $will_be_resolved
+```
+
+resolves to: `{test: {sub: "$wont_be_resolved", test2: {sub: "what ever is found from state.will_be_resolved"}}`
+ 
+Sub settings can be resolved by adding $ in front of setting key
 
 
 # Testing

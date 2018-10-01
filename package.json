@@ -4,16 +4,24 @@
   "description": "https://serverless.com/framework/docs/getting-started/",
   "main": "handler.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "json-to-html": "^0.1.2",
+    "mocha": "^5.2.0",
+    "mustache": "^3.0.0",
+    "node-json2html": "^1.2.0",
     "serverless-offline": "^3.25.11"
   },
   "dependencies": {
     "app-root-dir": "^1.0.2",
+    "file-system": "^2.2.2",
+    "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.15",
-    "node-yaml": "^3.1.1"
+    "mongoose-version": "^1.1.0",
+    "node-yaml": "^3.1.1",
+    "redis": "^2.8.0"
   }
 }

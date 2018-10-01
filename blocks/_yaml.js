@@ -9,7 +9,7 @@ class _block extends block {
         const blockObj = yaml.readSync(this.blocks.rootdir + this.get("filename"), {encoding: "utf8", schema: yaml.schema.defaultSafe})
 
         try {
-            const ret = (new blocks(this.blocks.logger, this.settings, this.blocks.depth)).run(blockObj, this.settings)
+            const ret = (new blocks(this.blocks.logger, this.settings, this.get("filename"))).run(blockObj, this.settings)
             if (isPromise(ret)) return ret
             return new Promise((resolve) => {resolve(ret)})
         }

@@ -12,11 +12,17 @@ class _block extends block {
             if (formatter === "edit") return
             const key = this.settings[formatter]
 
-            const key_arr = key.split(".")
-            const last_key = key_arr.pop()
-            const object = get(this.get("edit"), key_arr.join("."))
+            if (!key.includes(".")) {
+                const object = this.get("edit")
+                object[key] = this.format(formatter, object[key])
+            }
+            else {
+                const key_arr = key.split(".")
+                const last_key = key_arr.pop()
+                const object = get(this.get("edit"), key_arr.join("."))
 
-            object[last_key] = this.format(formatter, object[last_key])
+                object[last_key] = this.format(formatter, object[last_key])
+            }
         })
     }
 
@@ -24,6 +30,7 @@ class _block extends block {
 
         switch (formatter) {
             case "toString": return value.toString()
+            case "singularify": return value.endsWith("s") ? value.substring(0, value.length - 1) : value
             case "parseInt": return parseInt(value, 10)
             case "toDate": return moment(value).toDate()
             case "toMongoDate": return {

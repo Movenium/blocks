@@ -14,7 +14,7 @@ class _block extends block {
 
             const isThisRoute = this.isThisRoute(route, event);
             if (isThisRoute) {
-                return this.runBlockList(route.run)
+                return this.runBlockList(route.run, isThisRoute)
             }
         }
 

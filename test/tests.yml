@@ -1,0 +1,49 @@
+
+- data:
+    value: 123456
+
+- wait: 5
+
+- data > promisedValue:
+    wait: $wait
+    testvalue: 8765
+
+- data > values:
+    test1: 12
+    test2:
+      first: 123
+      second: 234
+    test3: $data.value
+    $testsub:
+      sub: $data.value
+      $subsub:
+        sub: $data.value
+    $testarray:
+      - first: 765
+        sub: $data.value
+        $subsub:
+          sub: $data.value
+      - second: $data.value
+    $wait:
+      value: 1122
+      wait: $wait
+    promisedValue: $promisedValue.testvalue
+    \$testdollar: 1111
+
+- data > asstring: $values.wait.value
+
+- assert > a1:  {test: $values.test1,                   equal: 12}
+- assert > a2:  {test: $values.test2.first,             equal: 123}
+- assert > a3:  {test: $values.testsub.sub,             equal: 123456}
+- assert > a4:  {test: $values.testsub.subsub.sub,      equal: 123456}
+- assert > a5:  {test: $values.testarray.0.first,       equal: 765}
+- assert > a6:  {test: $values.testarray.0.first,       equal: 765}
+- assert > a7:  {test: $values.testarray.0.sub,         equal: 123456}
+- assert > a8:  {test: $values.testarray.0.subsub.sub,  equal: 123456}
+- assert > a9:  {test: $values.wait.value,              equal: 1122}
+- assert > a10: {test: $asstring,                       equal: 1122}
+- assert > a11: {test: $values.test3,                   equal: 123456}
+- assert > a12: {test: $values.promisedValue,           equal: 8765}
+- assert > a13: {test: $values.$testdollar,             equal: 1111}
+
+- data > ok: ok

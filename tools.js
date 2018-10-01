@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports.get = function(object, path) {
+module.exports.get = function(object, path, notFound = "null") {
 
     if (!object) return null;
 
@@ -27,7 +27,7 @@ module.exports.get = function(object, path) {
     }
     else {
         //console.log("key", key, "was null")
-        return null;
+        return notFound === "null" ? null : undefined
     }
 }
 

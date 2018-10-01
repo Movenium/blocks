@@ -3,6 +3,21 @@ var block = require('./block');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var yaml = require('node-yaml');
+const isYaml = require("../tools").isYaml
+var version = require('mongoose-version');
+
+/**
+ * EXAMPLE
+ *
+ * - mongoose:
+ *     url: $values.config.mongourl
+ *     collection: $queryParams.form
+ *     $updateOne:
+ *        - _id: $queryParams.id
+ *          _partnerid: $values.userProfile.partnerid
+ *        - \$set: $document
+ *
+ */
 
 class _block extends block {
     run() {
@@ -20,31 +35,52 @@ class _block extends block {
             var db = mongoose.connection;
             db.on('error', (err) => reject(err))
             db.once('open', () => {
-                // we're connected!
-                if (this.exists("schema"))
-                    this.createSchema(this.get("collection"), this.get("schema"))
-                else if (this.exists("schemas"))
-                    this.createSchemas(this.get("schemas"))
 
-                const action = this.getAction()
+                try {
+                    // we're connected!
+                    if (this.exists("schema"))
+                        this.createSchema(this.get("collection"), this.get("schema"))
+                    else if (this.exists("schemas"))
+                        this.createSchemas(this.get("schemas"))
 
-                if (action) {
+                    const action = this.getAction()
 
-                    var model = mongoose.model(this.get("collection"));
+                    if (action) {
 
-                    model[action](this.get(action), (err, result) => {
-                        if (err) return reject(err)
-                        resolve(result);
-                    })
+                        var model = mongoose.model(this.get("collection"));
+
+                        if (this.get("lean", false) && ["find", "findOne"].includes(action)) {
+                            model[action](this.get(action)).lean().exec((err, result) => {
+                                if (err) return reject(err)
+                                resolve(result);
+                            })
+                        } else {
+                            // args must be array for mongoose .. if object given put it inside an array
+                            const args = Array.isArray(this.get(action)) ? this.get(action) : [this.get(action)]
+                            args.push((err, result) => {
+                                if (err) return reject(err)
+
+                                if (this.get("lean", false))
+                                    resolve(result.toObject())
+                                else
+                                    resolve(result)
+                            })
+                            model[action](...args)
+                        }
+
+                    }
+                    else
+                        resolve()
                 }
-                else
-                    resolve()
+                catch (e) {
+                    reject(e)
+                }
             });
         })
     }
 
     getAction() {
-        const actions = ["find", "create", "insertMany"]
+        const actions = ["find", "findOne", "create", "insertMany", "deleteOne", "update", "updateOne", "findByIdAndUpdate", "findOneAndUpdate"]
 
         let foundAction = null
 
@@ -55,8 +91,14 @@ class _block extends block {
         return foundAction
     }
 
-    createSchemas(filename) {
-        const schemas = yaml.readSync(this.blocks.rootdir + filename, {encoding: "utf8", schema: yaml.schema.defaultSafe})
+    createSchemas(mixed) {
+
+        let schemas
+
+        if (isYaml(mixed))
+            schemas = yaml.readSync(this.blocks.rootdir + mixed, {encoding: "utf8", schema: yaml.schema.defaultSafe})
+        else
+            schemas = mixed
 
         for (let collection of Object.keys(schemas))
             this.createSchema(collection, schemas[collection])
@@ -78,14 +120,17 @@ class _block extends block {
                 schema[fieldName] = this.getSchemaObject(field)
         })
 
-
-        mongoose.model(collectionName, new Schema(schema))//, { collection: collectionName}))
+        const mongooseSchema =  new Schema(schema, { collection: collectionName})
+        if (this.get("versions", false)) mongooseSchema.plugin(version, { collection: "_history_" + collectionName})
+        mongoose.model(collectionName, mongooseSchema)
     }
 
     getSchemaObject(str) {
-        if      (str == "date")   return Date
-        else if (str == "array")  return Array
-        else                      return String
+        if      (str == "date")     return Date
+        else if (str == "array")    return Array
+        else if (str == "objectid") return Schema.Types.ObjectId
+        else if (str == "mixed")    return Schema.Types.Mixed
+        else                        return String
     }
 }
 

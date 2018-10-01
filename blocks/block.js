@@ -10,16 +10,18 @@ class block {
         this.blocks = blocks
         this.filename = filename
         this.settings = settings
+        this.settingsPromise = null
     }
 
     _run() {
-        const promise = this.resolveSettings(this.settings)
+        this.settingsPromise = this.resolveSettings(this.settings)
 
         // promises found so let's wait resolving and return new promise
-        if (promise) {
+        if (isPromise(this.settingsPromise)) {
             return new Promise((resolve, reject) => {
                 // catch rejections
-                promise.then(() => {
+                this.settingsPromise.then((resolvedSettings) => {
+                    this.settings = resolvedSettings
                     try {
                         resolve(this.run())
                     }
@@ -31,27 +33,39 @@ class block {
             })
         }
         else {
+            this.settings = this.settingsPromise
             return this.run()
         }
     }
 
     run() {
+        throw new Error("block run should always be overwritten")
+    }
 
+    firstExisting(keys) {
+        for (let key of keys) if (this.exists(key)) return key
     }
 
     log(str, severity = "info", prefix = "") {
         this.blocks.log(str, severity, prefix + this.filename)
     }
 
-    get(name, def = undefined) {
-        if (typeof this.settings[name] === "undefined") {
+    dump(mixed) {
+        this.log(mixed, "dump")
+    }
+
+    get(path, def = undefined) {
+
+        const value = get(this.settings, path, "undefined")
+
+        if (typeof value === "undefined") {
 
             if (typeof def !== "undefined")
                 return def
             else
-                throw new Error("value '" + name + "' not set for " + this.filename)
+                throw new Error("value '" + path + "' not set for " + this.filename + " " + value)
         }
-        return this.settings[name]
+        return value
     }
 
     exists(name) {
@@ -60,54 +74,44 @@ class block {
 
     resolveSettings(settings) {
 
-        if (typeof settings === "string") {
-            const dollarResolved = this.resolveDollar(settings)
-            if (isPromise(dollarResolved)) {
-                dollarResolved.then((resolved) => this.settings = this.removeLeadingSlashDollar(resolved))
-                return dollarResolved
-            } else {
-                this.settings = this.removeLeadingSlashDollar(dollarResolved)
-                return null;
+        if (typeof settings === "string") return this.resolveDollar(settings)
+
+        const promises = []
+        for (let key in settings) {
+
+            if (Array.isArray(settings)) {
+                this.resolveSettings(settings[key])
+                promises.push(this.resolveIfPromise(settings, key, settings[key]))
+            }
+            else if (key.startsWith('$')) {
+                this.resolveSettings(settings[key])
+                promises.push(this.resolveIfPromise(settings, key.substring(1), settings[key]))
+                delete settings[key]
+            }
+            else if (key.startsWith('\\$')) {
+                promises.push(this.resolveIfPromise(settings, key.substring(1), this.resolveDollar(settings[key])))
+                delete settings[key]
+            }
+            else {
+                promises.push(this.resolveIfPromise(settings, key, this.resolveDollar(settings[key])))
             }
         }
 
-        return this.resolveSettingsObject(settings)
+        if (promises.filter((promise) => {return promise ? true : false}).length == 0) return settings;
+
+        return new Promise((resolve, reject) => {
+            Promise.all(promises).then(() => {resolve(settings)}, reject)
+        })
     }
 
-    resolveSettingsObject(settings) {
-
-        if (typeof settings === "string") return settings
-
-        const promises = []
-        Object.keys(settings).forEach((key) => {
-            const value = this.setting(settings, key)
-            if (isPromise(value)) {
-                promises.push(value)
-                value.then((resolved) => settings[key] = this.removeLeadingSlashDollar(resolved))
-            } else {
-
-                // resolve subobject if key starts with $
-                if (key.startsWith('$')) {
-                    const promise = this.resolveSettingsObject(value)
-                    if (isPromise(promise)) {
-                        promises.push(promise)
-                        promise.then(() => {
-                            settings[key.substring(1)] = this.removeLeadingSlashDollar(value)})
-                    } else {
-                        settings[key.substring(1)] = this.removeLeadingSlashDollar(value)
-                    }
-
-                    delete settings[key]
-                }
-                else {
-                    settings[key] = this.removeLeadingSlashDollar(value)
-                }
-            }
-        })
-
-        if (promises.length == 0) return null;
-
-        return Promise.all(promises)
+    resolveIfPromise(object, key, value) {
+        if (isPromise(value)) {
+            value.then((resolved) => {object[key] = this.removeLeadingSlashDollar(resolved)})
+            return value
+        } else {
+            object[key] = this.removeLeadingSlashDollar(value)
+            return null
+        }
     }
 
     removeLeadingSlashDollar(str) {
@@ -125,8 +129,8 @@ class block {
         return str
     }
 
-    runBlockList(blockList) {
-        return (new blocks(this.blocks.logger, this.blocks.state, this.blocks.depth)).run(blockList)
+    runBlockList(blockList, settings = {}) {
+        return (new blocks(this.blocks.logger, {...this.blocks.state, ...settings}, this.blocks.depth)).run(blockList)
     }
 
 }

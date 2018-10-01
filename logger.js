@@ -1,20 +1,57 @@
 'use strict';
 
 var isPromise = require("./tools").isPromise
+var mustache = require('mustache');
+var fs = require('file-system');
+var json2html = require('json-to-html');
 
 class logger {
 
     constructor() {
         this.logArr = []
+        this.dumps = []
+        this.starttime = new Date().getTime()
+        this.resolveOrder = 1
+    }
+
+    dump(mixed) {
+        this.dumps.push({dump: this.formatObject(mixed, Number.MAX_VALUE)})
     }
 
     log(mixed, severity = "info", prefix = "") {
-        if (typeof mixed === "string")
-            this.logArr.push(prefix + " " + severity + ": " + mixed)
+
+        if (severity === "dump") return this.dump(mixed)
+
+        this.logArr.push(mixed)
+
+        if (isPromise(mixed.settings)) {
+            mixed.settings.then((resolved) => {
+                mixed.settings = this.formatObject(resolved)
+                mixed.settingsIsPromise = true
+                mixed.settingsResolveOrder = this.resolveOrder++
+                mixed.starttime = (new Date().getTime()) - this.starttime
+            })
+        }
         else {
-            const add = {}
-            add[prefix + " " + severity] = mixed
-            this.logArr.push(add)
+            mixed.settings = this.formatObject(mixed.settings)
+            mixed.settingsResolveOrder = this.resolveOrder++
+            mixed.starttime = (new Date().getTime()) - this.starttime
+        }
+
+        if (isPromise(mixed.ret)) {
+            mixed.ret.then((resolved) => {
+                mixed.ret = this.formatObject(resolved)
+                mixed.retIsPromise = true
+                mixed.retResolveOrder = this.resolveOrder++
+                mixed.endtime = (new Date().getTime()) - this.starttime
+                mixed.time = mixed.endtime - mixed.starttime
+            })
+        }
+        else {
+            mixed.ret = this.formatObject(mixed.ret)
+            mixed.retResolveOrder = this.resolveOrder++
+            mixed.endtime = (new Date().getTime()) - this.starttime
+            mixed.time = mixed.endtime - mixed.starttime
         }
     }
 
@@ -32,7 +69,7 @@ class logger {
     }
 
     getLog() {
-        return this.logArr
+        return {dump: this.dumps, trace: this.logArr}
     }
 
     logPromise(mixed) {
@@ -46,6 +83,29 @@ class logger {
         }
         else
             this.log("resolved " + blockObj + " - " + JSON.stringify(ret))
+    }
+
+    asHTML(response = null, error = null) {
+
+        const template = fs.readFileSync('./node_modules/blocks/views/debug.html', 'utf-8');
+
+        var view = {
+            dumps: this.dumps,
+            response: this.formatObject(response),
+            error: error,
+            time: new Date().getTime() - this.starttime,
+            blocks: this.logArr.sort((a,b) => {return a.retResolveOrder - b.retResolveOrder}),
+        };
+        return {statusCode: 200, headers: {'Content-Type': 'text/html'}, body: mustache.to_html(template, view)}
+
+    }
+
+    formatObject(mixed, maxlen = 5000) {
+        if (!mixed) return null
+        const json = JSON.stringify(mixed, null, 4)
+
+        if (json.length > maxlen) return json.substring(0, maxlen) + "\n..."
+        else return json
     }
 }
 

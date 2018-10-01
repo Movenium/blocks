@@ -4,17 +4,16 @@ var isPromise = require('./tools').isPromise
 
 class blocks {
 
-    constructor(logger, settings = {}, depth = 0) {
+    constructor(logger = undefined, settings = {}, parent = null) {
         this.state = settings
         this.logger = logger
-        this.depth = depth + 1
 
-        this.debug = {}
+        this.parent = parent
         this.rootdir = require('app-root-dir').get() + "/"
     }
 
-    run(blockObj, settings = {}) {
-        return this["run_" + this.getTypeOf(blockObj)](blockObj, settings)
+    run(blockObj, settings = {}, meta = null) {
+        return this["run_" + this.getTypeOf(blockObj)](blockObj, settings, meta)
     }
 
     getTypeOf(blockObj) {
@@ -34,13 +33,10 @@ class blocks {
     run_list(blockList) {
         let promises = []
         blockList.forEach((blockObj) => {
-            this.log("execute " + JSON.stringify(blockObj))
-
             const fileObj = this.getFileObj(blockObj)
-            const ret = this.run(fileObj.filename, fileObj.settings)
+            const ret = this.run(fileObj.filename, fileObj.settings, {saveto: fileObj.saveto, parent: this.parent})
             this.add_state(fileObj.saveto, ret)
             promises.push(ret)
-            this.logger.runned(fileObj, ret, this.depth)
         })
 
         // we wan't to wait all the possible promises resolves before continuing
@@ -76,10 +72,13 @@ class blocks {
         return {filename: filename, saveto: saveto, settings: settings}
     }
 
-    run_js(filename, settings) {
+    run_js(filename, settings, meta) {
         const path = filename.startsWith("/") ? this.rootdir + "blocks" : "./blocks/"
         let js = require(path + filename)
-        return (new js(this, filename, settings))._run()
+        const js_block = new js(this, filename, settings)
+        const ret = js_block._run()
+        this.log({execute: filename, meta: meta, settings: js_block.settingsPromise, ret: ret})
+        return ret
     }
 
     add_state(name, values) {
@@ -88,6 +87,7 @@ class blocks {
     }
 
     log(str, severity = "info", prefix = "") {
+        if (!this.logger) return
         this.logger.log(str, severity, Array(this.depth).join("    ") + prefix)
     }
 }
