@@ -92,7 +92,7 @@ class logger {
         var view = {
             dumps: this.dumps,
             response: this.formatObject(response),
-            error: error,
+            error: typeof error === "string" ? {message: error} : error,
             time: new Date().getTime() - this.starttime,
             blocks: this.logArr.sort((a,b) => {return a.retResolveOrder - b.retResolveOrder}),
         };

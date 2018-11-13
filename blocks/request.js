@@ -10,9 +10,12 @@ class _block extends block {
             if (this.exists("bearer")) headers.Authorization = this.get("bearer")
 
             var options = {
-                url: this.get("url") + this.get("path", ""),
+                url: this.get("url"),// + this.exists("path") ? this.get("path", "") : "",
                 headers: headers
             };
+
+            if (this.exists("body")) options["body"] = this.get("body")
+            if (this.exists("method")) options["method"] = this.get("method")
 
             request(options, (error, response, body) => {
 

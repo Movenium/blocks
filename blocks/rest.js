@@ -4,63 +4,34 @@ var tools = require('../tools')
 
 class _block extends block {
     run() {
+        return new Promise((resolve, reject) => {
+            for (const route of this.get("routes")) {
+                if (!route.method) route.method = "get"
 
-        const event = this.get("event")
-
-        if (!this.exists("routes")) throw new Error("Routes must be given")
-
-        for (const route of this.get("routes")) {
-            if (!route.method) throw new Error("routes must have methods");
-
-            const isThisRoute = this.isThisRoute(route, event);
-            if (isThisRoute) {
-                return this.runBlockList(route.run, isThisRoute)
+                const isThisRoute = this.isThisRoute(route, this.get("method").toLowerCase(), this.get("path"));
+                if (isThisRoute) {
+                    this.runBlockList(route.run, isThisRoute).then((response) => {
+                        resolve({response: response, params: isThisRoute})
+                    }).catch(reject)
+                    return
+                }
             }
-        }
 
-        throw new Error("Route wasn't found");
+            reject(Error("Route wasn't found"))
+        })
     }
 
-    isThisRoute(route, event) {
-
-        if (!event) return false;
-
-        if (route.method === "crud") {
-            const values_without_id = this.testPath(route.path, event);
-
-            if (values_without_id && event.httpMethod.toLowerCase() == "post") {
-                return {action: "insert", queryParams: values_without_id};
-            }
-            if (values_without_id && event.httpMethod.toLowerCase() == "get") {
-                return {action: "findAll", queryParams: values_without_id};
-            }
-
-            const values_with_id = this.testPath(route.path + "/:id", event);
-
-            if (values_with_id && event.httpMethod.toLowerCase() == "put") {
-                return {action: "update", queryParams: values_with_id};
-            }
-            if (values_with_id && event.httpMethod.toLowerCase() == "get") {
-                return {action: "read", queryParams: values_with_id};
-            }
-            if (values_with_id && event.httpMethod.toLowerCase() == "delete") {
-                return {action: "delete", queryParams: values_with_id};
-            }
-        }
-        else {
-            if (event.httpMethod.toLowerCase() !== route.method.toLowerCase()) return false;
-            const values = this.testPath(route.path, event);
-            if (!values) return false;
-            return {queryParams: values};
-        }
-
-        return false;
+    isThisRoute(route, method, path) {
+        if (method.toLowerCase() !== route.method.toLowerCase()) return false;
+        const values = this.testPath(route.path, path);
+        if (!values) return false;
+        return {queryParams: values};
     }
 
-    testPath(path, event) {
+    testPath(path, testpath) {
         const parsedPath = this.makeRegexpFromPath(path);
 
-        const match = event.path.match(parsedPath.regexp);
+        const match = testpath.match(parsedPath.regexp);
 
         if (match === null) return false;
 

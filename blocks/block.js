@@ -13,6 +13,68 @@ class block {
         this.settingsPromise = null
     }
 
+
+    /*
+    _run() {
+        console.log("resolve", this.settings)
+        const ret = this.resolver(this, "settings")
+
+        // promises found so let's wait resolving and return new promise
+        if (isPromise(ret)) {
+            return new Promise((resolve, reject) => {
+                // catch rejections
+                ret.then(() => {
+                    try {
+                        resolve(this.run())
+                    }
+                    // catch non promise errors - these can happen if run throws errors
+                    catch (reason) {
+                        reject(reason)
+                    }
+                }, reject)
+            })
+        }
+        else {
+            return this.run()
+        }
+    }
+
+    resolver(obj, branch) {
+        const settings = obj[branch]
+        if (typeof settings === "string") {
+            obj[branch] = this.resolveDollar(settings)
+            return obj[branch]
+        }
+
+        const promises = []
+        for (let key in settings) {
+
+            if (Array.isArray(settings)) {
+                const ret = this.resolver(settings, key)
+                if (isPromise(ret)) promises.push(this.resolveIfPromise(settings, key, settings[key]))
+                else settings[key] = ret
+            }
+            else if (key.startsWith('$')) {
+                this.resolver(settings, key)
+                promises.push(this.resolveIfPromise(settings, key.substring(1), settings[key]))
+                delete settings[key]
+            }
+            else if (key.startsWith('\\$')) {
+                promises.push(this.resolveIfPromise(settings, key.substring(1), this.resolveDollar(settings[key])))
+                delete settings[key]
+            }
+            else {
+                promises.push(this.resolveIfPromise(settings, key, this.resolveDollar(settings[key])))
+            }
+        }
+
+        if (promises.filter((promise) => {return promise ? true : false}).length == 0) return settings;
+
+        return new Promise((resolve, reject) => {
+            Promise.all(promises).then(() => {resolve(settings)}, reject)
+        })
+    }*/
+
     _run() {
         this.settingsPromise = this.resolveSettings(this.settings)
 
@@ -27,6 +89,7 @@ class block {
                     }
                     // catch non promise errors - these can happen if run throws errors
                     catch (reason) {
+                        console.log(reason)
                         reject(reason)
                     }
                 }, reject)
@@ -56,7 +119,7 @@ class block {
 
     get(path, def = undefined) {
 
-        const value = get(this.settings, path, "undefined")
+        const value = get(this.settings, path)
 
         if (typeof value === "undefined") {
 
@@ -80,8 +143,9 @@ class block {
         for (let key in settings) {
 
             if (Array.isArray(settings)) {
-                this.resolveSettings(settings[key])
-                promises.push(this.resolveIfPromise(settings, key, settings[key]))
+                const ret = this.resolveSettings(settings[key])
+                if (isPromise(ret)) promises.push(this.resolveIfPromise(settings, key, settings[key]))
+                else settings[key] = ret
             }
             else if (key.startsWith('$')) {
                 this.resolveSettings(settings[key])
@@ -125,7 +189,7 @@ class block {
     }
 
     resolveDollar(str) {
-        if (typeof str === "string" && str.startsWith("$")) return get(this.blocks.state, str.substring(1))
+        if (typeof str === "string" && str.startsWith("$")) return get(this.blocks.state, str.substring(1), "undefined")
         return str
     }
 

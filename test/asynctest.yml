@@ -1,0 +1,18 @@
+
+- wait > wait1: 20
+
+- wait > wait2:
+    time: 20
+    wait: wait1
+    ret: motro
+
+- data > waitboth:
+    test1: $wait1
+    test2: $wait2
+    ret: both_ok
+
+- assert:
+    test: $waitboth.ret
+    equal: both_ok
+
+- data > ok: ok

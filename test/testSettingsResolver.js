@@ -42,4 +42,15 @@ describe('Settings', function() {
         });
     });
 
+    it('test async yaml', function(done) {
+        (new blocks()).run("test/asynctest.yml").then((response) => {
+            assert(response)
+            //console.log("resp", response.testarray)
+            done();
+        }).catch((error) => {
+            assert(false, error)
+
+        });
+    });
+
 });
