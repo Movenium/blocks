@@ -4,15 +4,18 @@
 - wait > wait2:
     time: 20
     wait: wait1
-    ret: motro
+    ret: "{}"
 
-- data > waitboth:
-    test1: $wait1
-    test2: $wait2
-    ret: both_ok
+#- data > waitboth:
+#    test1: $wait1
+#    test2: $wait2
+#    ret: both_ok
 
-- assert:
-    test: $waitboth.ret
-    equal: both_ok
+#- assert:
+#    test: $waitboth.ret
+#    equal: both_ok
+
+# this fails if wait2 is promise and not resolved before injecting to json block
+- json: $wait2
 
 - data > ok: ok

@@ -1,0 +1,52 @@
+{
+    "params": [
+        {
+            "url": "http://localhost:30003/trigger/hook",
+            "headers": {}
+        }
+    ],
+    "response": [
+        null,
+        {
+            "statusCode": 200,
+            "body": "[{\"a\":\"1\",\"b\":\"2\"}]",
+            "headers": {
+                "date": "Wed, 12 Dec 2018 09:11:54 GMT",
+                "server": "Apache/2.4.7 (Ubuntu)",
+                "x-powered-by": "PHP/5.5.9-1ubuntu4.22",
+                "access-control-allow-origin": "*",
+                "access-control-allow-methods": "GET, POST, OPTIONS",
+                "access-control-allow-headers": "Origin, Content-Type, Accept, Authorization, X-Request-With",
+                "access-control-expose-headers": "X-slicer-max, X-slicer-last",
+                "access-control-allow-credentials": "true",
+                "x-cc-cache_version": "1",
+                "cache-control": "no-cache",
+                "set-cookie": [
+                    "laravel_session=eyJpdiI6Ing2RmxyS3ZyK2p1ejhjNmQ2SERuSmc9PSIsInZhbHVlIjoicXhjcER6eUNsU2ZcLzVRZ2tTQ2RPT1BGWlwvOVwvV3o5eElTbTFcL1FBQ2ZBOHZtTFwvMXZ0ZVlVeFhvTTFhWEtUZGhPSHhvMjdiSElXc3hTaXV1RTJDOFNkQT09IiwibWFjIjoiNjg4MDU4MWM2YzJlZjIyMGIxZTAwODRhMjZmM2Q0Njk5ZjE0NjIzNWY3OGM0OTI3ZThmMzMzMTE1MGUzYTFkNiJ9; expires=Wed, 12-Dec-2018 11:11:56 GMT; Max-Age=7200; path=/; httponly"
+                ],
+                "content-length": "19",
+                "connection": "close",
+                "content-type": "application/json"
+            },
+            "request": {
+                "uri": {
+                    "protocol": "http:",
+                    "slashes": true,
+                    "auth": null,
+                    "host": "localhost:30003",
+                    "port": "30003",
+                    "hostname": "localhost",
+                    "hash": null,
+                    "search": null,
+                    "query": null,
+                    "pathname": "/trigger/hook",
+                    "path": "/trigger/hook",
+                    "href": "http://localhost:30003/trigger/hook"
+                },
+                "method": "GET",
+                "headers": {}
+            }
+        },
+        "[{\"a\":\"1\",\"b\":\"2\"}]"
+    ]
+}

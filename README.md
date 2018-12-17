@@ -140,25 +140,37 @@ Pre-written mocha test handler
 
 ```
 var assert = require('assert');
-const fs = require('fs');
-const blocks = require('blocks');
+var blocks = require("@movenium/blocks/blocks")
 
-describe('Test through all yml and json tests', function() {
-    fs.readdirSync("./test").forEach(file => {
-        if (file.match(/.(yml|json)$/g)) {
-            describe('Test ' + file, function () {
-                it('Should run without errors', function(done) {
-                    blocks.run((file.match(/.(json)$/g) ? './' : '../../') + 'test/' + file, {_testmode: true}, (error, response) => {
-                        if (error)
-                            done(error);
-                        else
-                            done();
-                    });
-                });
+const fs = require('fs');
+
+describe('all recorded tests', function() {
+
+    const files = fs.readdirSync("recordings").filter((item) => item.startsWith("recording-")).map((item) => item.split(".")[0])
+    for (let i = 0; i < files.length; i++) {
+
+        const data = fs.readFileSync("recordings/" + files[i] + ".json", "utf8")
+        const request = JSON.parse(data)
+        const params = request.params
+
+        it("run '" + files[i] + "'", function (done) {
+
+            this.timeout(5000);
+
+            (new blocks(undefined, null)).runMocked(params[0], params[1], files[i]).then((response) => {
+                assert.equal(request.response[0], "resolve")
+                assert.deepEqual(request.response[1], response)
+                done();
+            }).catch((reason) => {
+                if (request.response[0] !== "reject") console.log(reason)
+                assert.equal(request.response[0], "reject")
+                assert.deepEqual(request.response[1], reason)
+                done();
             });
-        }
-    });
-});
+        })
+    }
+
+})
 ```
 
 test by running

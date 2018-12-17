@@ -17,8 +17,7 @@ class _block extends block {
             if (this.exists("body")) options["body"] = this.get("body")
             if (this.exists("method")) options["method"] = this.get("method")
 
-            request(options, (error, response, body) => {
-
+            this.mocker.mockFunction(request, options, (error, response, body) => {
                 if (error) return reject(error)
                 if (!response) return reject("noresponse")
                 if (response.statusCode != 200 && response.statusCode != 201) return reject(body)

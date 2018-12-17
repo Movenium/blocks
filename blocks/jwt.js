@@ -6,9 +6,14 @@ var assert = require("assert")
 class _block extends block {
     run() {
         if (this.exists("verify")) {
-            assert(this.get("verify"), "cannot verify null jwt")
+            assert(this.get("verify", null), "cannot verify null jwt")
             const token = this.get("verify").startsWith("Bearer ") ? this.get("verify").substring(7) : this.get("verify")
-            return jwt.verify(token, this.get("private").replace(/\n/g, "\n"))
+
+            // if we are mocking do not call jwt.verify because it will result "token expired"
+            if (this.mocker.mode === "mock") return this.mocker.mockValue(null, token)
+
+            const decoded_jwt = jwt.verify(token, this.get("private").replace(/\n/g, "\n"))
+            return this.mocker.mockValue(decoded_jwt, token)
         }
     }
 }

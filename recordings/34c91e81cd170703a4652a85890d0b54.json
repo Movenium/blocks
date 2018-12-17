@@ -1,0 +1,21 @@
+{
+    "params": {
+        "clearModels": true,
+        "schema": {
+            "teste": "string"
+        },
+        "url": "mongodb://localhost:27017/docker_dev",
+        "collection": "test",
+        "lean": true,
+        "find": {}
+    },
+    "response": [
+        "resolve",
+        [
+            {
+                "_id": "5c0a2fb9ce4f915b584b704b",
+                "test": "works"
+            }
+        ]
+    ]
+}

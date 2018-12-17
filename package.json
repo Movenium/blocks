@@ -4,12 +4,13 @@
   "description": "https://serverless.com/framework/docs/getting-started/",
   "main": "handler.js",
   "scripts": {
-    "test": "mocha"
+    "test": "nyc mocha"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "json-to-html": "^0.1.2",
+    "md5": "^2.2.1",
     "mocha": "^5.2.0",
     "mustache": "^3.0.0",
     "node-json2html": "^1.2.0",
@@ -17,11 +18,13 @@
   },
   "dependencies": {
     "app-root-dir": "^1.0.2",
+    "bluebird": "^3.5.3",
     "file-system": "^2.2.2",
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.15",
     "mongoose-version": "^1.1.0",
     "node-yaml": "^3.1.1",
-    "redis": "^2.8.0"
+    "redis": "^2.8.0",
+    "request": "^2.88.0"
   }
 }

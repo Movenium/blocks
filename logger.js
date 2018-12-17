@@ -30,7 +30,7 @@ class logger {
                 mixed.settingsIsPromise = true
                 mixed.settingsResolveOrder = this.resolveOrder++
                 mixed.starttime = (new Date().getTime()) - this.starttime
-            })
+            }).catch(() => {})
         }
         else {
             mixed.settings = this.formatObject(mixed.settings)
@@ -45,7 +45,7 @@ class logger {
                 mixed.retResolveOrder = this.resolveOrder++
                 mixed.endtime = (new Date().getTime()) - this.starttime
                 mixed.time = mixed.endtime - mixed.starttime
-            })
+            }).catch(() => {})
         }
         else {
             mixed.ret = this.formatObject(mixed.ret)
@@ -87,7 +87,7 @@ class logger {
 
     asHTML(response = null, error = null) {
 
-        const template = fs.readFileSync('./node_modules/blocks/views/debug.html', 'utf-8');
+        const template = fs.readFileSync('./node_modules/@movenium/blocks/views/debug.html', 'utf-8');
 
         var view = {
             dumps: this.dumps,

@@ -3,20 +3,21 @@
 const get = require("../tools").get
 const isPromise = require("../tools").isPromise
 var blocks = require('../blocks');
+//var Promise = require("bluebird")
 
 class block {
 
-    constructor(blocks, filename, settings) {
+    constructor(blocks, filename, settings, mocker = null) {
         this.blocks = blocks
         this.filename = filename
         this.settings = settings
         this.settingsPromise = null
+        this.mocker = mocker
     }
 
 
-    /*
+
     _run() {
-        console.log("resolve", this.settings)
         const ret = this.resolver(this, "settings")
 
         // promises found so let's wait resolving and return new promise
@@ -31,7 +32,7 @@ class block {
                     catch (reason) {
                         reject(reason)
                     }
-                }, reject)
+                }, () => {})
             })
         }
         else {
@@ -42,7 +43,10 @@ class block {
     resolver(obj, branch) {
         const settings = obj[branch]
         if (typeof settings === "string") {
-            obj[branch] = this.resolveDollar(settings)
+            obj[branch] = this.getDollarString(settings)
+            // if this.settings it self is a promise we need to resolve it and set
+            // this.settings manually with resolved value
+            if (obj === this && isPromise(obj[branch])) obj[branch].then((response) => obj[branch] = response)
             return obj[branch]
         }
 
@@ -60,11 +64,11 @@ class block {
                 delete settings[key]
             }
             else if (key.startsWith('\\$')) {
-                promises.push(this.resolveIfPromise(settings, key.substring(1), this.resolveDollar(settings[key])))
+                promises.push(this.resolveIfPromise(settings, key.substring(1), this.getDollarString(settings[key])))
                 delete settings[key]
             }
             else {
-                promises.push(this.resolveIfPromise(settings, key, this.resolveDollar(settings[key])))
+                promises.push(this.resolveIfPromise(settings, key, this.getDollarString(settings[key])))
             }
         }
 
@@ -73,9 +77,9 @@ class block {
         return new Promise((resolve, reject) => {
             Promise.all(promises).then(() => {resolve(settings)}, reject)
         })
-    }*/
+    }
 
-    _run() {
+    __run() {
         this.settingsPromise = this.resolveSettings(this.settings)
 
         // promises found so let's wait resolving and return new promise
@@ -89,10 +93,10 @@ class block {
                     }
                     // catch non promise errors - these can happen if run throws errors
                     catch (reason) {
-                        console.log(reason)
+                        //console.log("form block.js", reason)
                         reject(reason)
                     }
-                }, reject)
+                }, () => {/*if some of the settings rejects there is no need to run current block*/})
             })
         }
         else {
@@ -118,9 +122,7 @@ class block {
     }
 
     get(path, def = undefined) {
-
-        const value = get(this.settings, path)
-
+        const value = get(this.settings, path, "undefined")
         if (typeof value === "undefined") {
 
             if (typeof def !== "undefined")
@@ -135,7 +137,7 @@ class block {
         return typeof this.settings[name] !== "undefined"
     }
 
-    resolveSettings(settings) {
+    /*resolveSettings(settings) {
 
         if (typeof settings === "string") return this.resolveDollar(settings)
 
@@ -166,11 +168,12 @@ class block {
         return new Promise((resolve, reject) => {
             Promise.all(promises).then(() => {resolve(settings)}, reject)
         })
-    }
+    }*/
 
     resolveIfPromise(object, key, value) {
         if (isPromise(value)) {
-            value.then((resolved) => {object[key] = this.removeLeadingSlashDollar(resolved)})
+            // reject catching is not needed because Promise.all is also handling these
+            value.then((resolved) => {object[key] = this.removeLeadingSlashDollar(resolved)}, () => {})
             return value
         } else {
             object[key] = this.removeLeadingSlashDollar(value)
@@ -188,13 +191,13 @@ class block {
         return this.resolveDollar(get(settings, path))
     }
 
-    resolveDollar(str) {
+    getDollarString(str) {
         if (typeof str === "string" && str.startsWith("$")) return get(this.blocks.state, str.substring(1), "undefined")
         return str
     }
 
     runBlockList(blockList, settings = {}) {
-        return (new blocks(this.blocks.logger, {...this.blocks.state, ...settings}, this.blocks.depth)).run(blockList)
+        return (new blocks(this.blocks.logger, {...this.blocks.state, ...settings}, this.blocks.depth, this.mocker)).run(blockList)
     }
 
 }

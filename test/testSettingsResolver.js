@@ -1,6 +1,120 @@
 var assert = require('assert');
 var blocks = require("../blocks")
 
+var mockRecorder = require("../mocker")
+
+
+describe("errors", function() {
+
+    it("simple error", function(done) {
+        (new blocks(undefined, {})).run([
+                {wait: 10},
+                {error: {
+                    wait: "$wait"
+                    }}
+            ]).then((response) => {
+
+        }).catch((reason) => {
+            assert.equal(reason.message, "error thrown by error block")
+            done()
+        });
+    })
+
+    it("async error", function(done) {
+        (new blocks(undefined, {})).run([
+            {wait: 10},
+            {error: {
+                        message: "yaml crashed",
+                        promise: true,
+                        wait: "$wait"
+                    }},
+            {data: {wait: "$error", message: "something"}}
+        ]).then((response) => {
+
+        }).catch((reason) => {
+            assert.equal(reason.message, "rejected by error block")
+            done()
+        });
+    })
+
+    it("error inside yaml", function(done) {
+        (new blocks(undefined, {})).run("test/testyaml.yml").catch((reason) => {
+            assert.equal(reason.message, "rejected by error block")
+            done()
+        });
+    })
+
+})
+
+describe('async', function() {
+
+    let mocker = new mockRecorder("mock", {debug: null})
+
+    it("simple request test", function(done) {
+
+        (new blocks(undefined, {test1: 1, test2: 2}, null, mocker)).run([{request: {url: "http://localhost:30003/trigger/hook"}}]).then((response) => {
+            assert.equal(response.statusCode, 200);
+            assert.equal(response.body, '[{"a":"1","b":"2"}]');
+            done();
+        });
+    })
+
+    //mocker.mode = "record"
+
+    it("mongoose test get", function(done) {
+
+        (new blocks(undefined, {}, null, mocker)).run([{
+            mongoose: {
+                clearModels: true,
+                schema: {teste: "string"},
+                url: "mongodb://localhost:27017/docker_dev",
+                collection: "test",
+                lean: true,
+                find: {}
+            }
+        }]).then((response) => {
+            assert.equal(response.length, 1);
+            assert.equal(response[0].test, "works");
+            done();
+        });
+    })
+
+    it("mongoose test write", function(done) {
+
+        (new blocks(undefined, {}, null, mocker)).run([{
+            mongoose: {
+                clearModels: true,
+                schema: {testwrite: "string"},
+                url: "mongodb://localhost:27017/docker_dev",
+                collection: "testwrite",
+                create: {"testwrite": "ok"}
+            }
+        }]).then((response) => {
+            assert.equal(response.testwrite, "ok");
+            done();
+        });
+    })
+
+    it("test response block", function(done) {
+
+        (new blocks(undefined)).run([{
+            data: {
+                works: "like a charm"
+            }
+        }, {
+            response: {
+            message: "$data"
+        }
+        }]).then((response) => {
+            assert.equal(response.statusCode, 200);
+            assert.equal(response.body, '{"message":{"works":"like a charm"}}');
+            done();
+        });
+
+    })
+
+})
+
 describe('Settings', function() {
 
     it('test easiest setting', function(done) {

@@ -1,0 +1,11 @@
+
+- wait: 10
+
+- error:
+    message: "yaml crashed"
+    promise: true
+    wait: $wait
+
+- data:
+    wait: $error
+

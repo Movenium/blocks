@@ -27,56 +27,69 @@ class _block extends block {
             mongoose.modelSchemas = {};
         }
 
-        return new Promise((resolve,reject) => {
-            mongoose.connect(this.get("url"), (err) => {
+        return this.mocker.newPromise((resolve,reject) => {
+            mongoose.connect(this.get("url"), { useNewUrlParser: true }, (err) => {
                 //reject(err)
             });
 
             var db = mongoose.connection;
             db.on('error', (err) => reject(err))
             db.once('open', () => {
-
-                try {
-                    // we're connected!
-                    if (this.exists("schema"))
-                        this.createSchema(this.get("collection"), this.get("schema"))
-                    else if (this.exists("schemas"))
-                        this.createSchemas(this.get("schemas"))
-
-                    const action = this.getAction()
-
-                    if (action) {
-
-                        var model = mongoose.model(this.get("collection"));
-
-                        if (this.get("lean", false) && ["find", "findOne"].includes(action)) {
-                            model[action](this.get(action)).lean().exec((err, result) => {
-                                if (err) return reject(err)
-                                resolve(result);
-                            })
-                        } else {
-                            // args must be array for mongoose .. if object given put it inside an array
-                            const args = Array.isArray(this.get(action)) ? this.get(action) : [this.get(action)]
-                            args.push((err, result) => {
-                                if (err) return reject(err)
-
-                                if (this.get("lean", false))
-                                    resolve(result.toObject())
-                                else
-                                    resolve(result)
-                            })
-                            model[action](...args)
-                        }
-
-                    }
-                    else
-                        resolve()
-                }
-                catch (e) {
-                    reject(e)
-                }
+                this.makeMongooseQuery(db, resolve, reject)
             });
-        })
+        }, this.settings)
+    }
+
+    makeMongooseQuery(db, resolve, reject) {
+        try {
+            // we're connected!
+            if (this.exists("schema"))
+                this.createSchema(this.get("collection"), this.get("schema"))
+            else if (this.exists("schemas"))
+                this.createSchemas(this.get("schemas"))
+
+            const action = this.getAction()
+
+            if (action) {
+
+                var model = mongoose.model(this.get("collection"));
+
+                if (this.get("lean", false) && ["find", "findOne"].includes(action)) {
+                    //model[action](this.get(action)).lean().exec((err, result) => {
+                    this.runQueryAndLean(model, action, this.get(action), (err, result) => {
+                        if (err) return reject(err)
+                        db.close()
+                        resolve(result);
+                    })
+                } else {
+                    // args must be array for mongoose .. if object given put it inside an array
+                    const args = Array.isArray(this.get(action)) ? this.get(action) : [this.get(action)]
+                    this.runQuery(model, action, args, (err, result) => {
+                        if (err) return reject(err)
+                        db.close()
+
+                        if (this.get("lean", false))
+                            resolve(result.toObject())
+                        else
+                            resolve(result)
+                    })
+                }
+
+            }
+            else
+                resolve()
+        }
+        catch (e) {
+            reject(e)
+        }
+    }
+
+    runQueryAndLean(model, action, params, callback) {
+        model[action](params).lean().exec(callback)
+    }
+
+    runQuery(model, action, params, callback) {
+        model[action](...params, callback)
     }
 
     getAction() {

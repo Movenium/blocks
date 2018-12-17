@@ -4,7 +4,7 @@ var redis = require('redis');
 
 class _block extends block {
     run() {
-        return new Promise((resolve, reject) => {
+        return this.mocker.newPromise((resolve, reject) => {
             const client = redis.createClient();
 
             const action = this.firstExisting(["get"])
@@ -13,7 +13,7 @@ class _block extends block {
                 if (err) reject(err)
                 resolve(value)
             });
-        })
+        }, this.settings)
 
     }
 }
