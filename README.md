@@ -146,25 +146,32 @@ const fs = require('fs');
 
 describe('all recorded tests', function() {
 
-    const files = fs.readdirSync("recordings").filter((item) => item.startsWith("recording-")).map((item) => item.split(".")[0])
+    const rerecord = false
+    const runOnly = null//['recording-get_with_bad_id']
+    const skipTests = ['recording-get_with_bad_id']
+
+    let files = fs.readdirSync("recordings").filter((item) => item.startsWith("recording-")).map((item) => item.split(".")[0])
+    if (runOnly) files = files.filter((item) => runOnly.indexOf(item) !== -1)
+    if (skipTests) files = files.filter((item) => skipTests.indexOf(item) === -1)
     for (let i = 0; i < files.length; i++) {
 
         const data = fs.readFileSync("recordings/" + files[i] + ".json", "utf8")
-        const request = JSON.parse(data)
-        const params = request.params
+        const test = JSON.parse(data)
 
         it("run '" + files[i] + "'", function (done) {
 
             this.timeout(5000);
 
-            (new blocks(undefined, null)).runMocked(params[0], params[1], files[i]).then((response) => {
-                assert.equal(request.response[0], "resolve")
-                assert.deepEqual(request.response[1], response)
+            (new blocks(undefined, null)).runMocked(test.request[0], test.request[1], files[i], test.recordings, rerecord).then((response) => {
+                if (rerecord) return done()
+                assert.equal(test.response[0], "resolve")
+                assert.deepEqual(test.response[1], response)
                 done();
             }).catch((reason) => {
-                if (request.response[0] !== "reject") console.log(reason)
-                assert.equal(request.response[0], "reject")
-                assert.deepEqual(request.response[1], reason)
+                if (rerecord) return done()
+                if (test.response[0] !== "reject") console.log(reason)
+                assert.equal(test.response[0], "reject")
+                assert.deepEqual(test.response[1], reason)
                 done();
             });
         })
