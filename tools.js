@@ -22,7 +22,7 @@ module.exports.get = function(object, path, notFound = "null") {
 
         return module.exports.get(object[key], rest);
     }
-    else if (object[key]) {
+    else if (typeof object[key] !== "undefined") {
         return object[key];
     }
     else {

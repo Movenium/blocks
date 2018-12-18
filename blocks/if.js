@@ -31,7 +31,7 @@ class _block extends block {
             return this.setOrRun(this.get("else"))
         }
 
-        return false
+        return null
     }
 
     setOrRun(value) {
@@ -60,6 +60,9 @@ class _block extends block {
         }
         else if (this.exists("lte")) {
             return this.get("lte") >= value
+        }
+        else if (this.exists("includes")) {
+            return value.includes(this.get("includes"))
         }
         else
             return value ? true : false
