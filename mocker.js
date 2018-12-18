@@ -58,9 +58,9 @@ class mocker {
     reformatResponse(response) {
         if (typeof response.map === "function") {
             return response.map((item) => {
-                if (item instanceof Error) return item.toString()
+                //if (item instanceof Error) return item.toString()
                 //else if (item instanceof Date) return "2018-01-01T08:00:00Z"
-                else return item
+                return item
             })
         }
 
