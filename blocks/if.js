@@ -62,7 +62,7 @@ class _block extends block {
             return this.get("lte") >= value
         }
         else if (this.exists("includes")) {
-            return value.includes(this.get("includes"))
+            return Array.isArray(value) ? value.includes(this.get("includes")) : false
         }
         else
             return value ? true : false
