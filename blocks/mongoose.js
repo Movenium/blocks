@@ -53,8 +53,16 @@ class _block extends block {
             if (action) {
 
                 var model = mongoose.model(this.get("collection"));
+                var actionParams = this.get(action)
 
-                if (this.get("lean", false) && ["find", "findOne"].includes(action)) {
+                if (action == "find" && Array.isArray(actionParams)) {
+                    this.queryBuilder(model, actionParams, (err, result) => {
+                        if (err) return reject(err)
+                        db.close()
+                        resolve(result);
+                    })
+                }
+                else if (this.get("lean", false) && ["find", "findOne"].includes(action)) {
                     //model[action](this.get(action)).lean().exec((err, result) => {
                     this.runQueryAndLean(model, action, this.get(action), (err, result) => {
                         if (err) return reject(err)
@@ -90,6 +98,18 @@ class _block extends block {
 
     runQuery(model, action, params, callback) {
         model[action](...params, callback)
+    }
+
+    queryBuilder(model, params, callback) {
+        this.dump(params)
+        let loop = model.find()
+        params.forEach((item) => {
+            const keys = Object.keys(item)
+            const func = keys[0]
+            const param = item[func]
+            loop = loop[func](param)
+        })
+        loop.exec(callback)
     }
 
     getAction() {
@@ -141,6 +161,7 @@ class _block extends block {
     getSchemaObject(str) {
         if      (str == "date")     return Date
         else if (str == "array")    return Array
+        else if (str == "number")    return Number
         else if (str == "objectid") return Schema.Types.ObjectId
         else if (str == "mixed")    return Schema.Types.Mixed
         else                        return String
