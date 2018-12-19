@@ -101,14 +101,14 @@ class _block extends block {
     }
 
     queryBuilder(model, params, callback) {
-        this.dump(params)
         let loop = model.find()
         params.forEach((item) => {
             const keys = Object.keys(item)
             const func = keys[0]
             const param = item[func]
-            loop = loop[func](param)
+            loop = param ? loop[func](param) : loop[func]()
         })
+        if (this.get("lean")) loop = loop.lean()
         loop.exec(callback)
     }
 
