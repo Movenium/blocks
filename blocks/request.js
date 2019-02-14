@@ -6,7 +6,7 @@ class _block extends block {
     run() {
         return new Promise((resolve, reject) => {
 
-            let headers = {}
+            let headers = this.get("headers", {})
             if (this.exists("bearer")) headers.Authorization = this.get("bearer")
 
             var options = {
