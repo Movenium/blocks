@@ -2,6 +2,28 @@
 var block = require('./block')
 var tools = require('../tools')
 
+/**
+ * EXAMPLE:
+ * 
+ *- rest:
+    method: $event.httpMethod
+    path: $event.path
+
+    routes:
+      - method: post
+        path: /:form
+        run:
+          - routes/insertRow.yml:
+              values: $values
+              queryParams: $queryParams
+
+      - method: patch
+        path: /:form/:id
+        run:
+          - routes/updateRow.yml:
+              values: $values
+              queryParams: $queryParams
+ */
 class _block extends block {
     run() {
         return new Promise((resolve, reject) => {

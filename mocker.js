@@ -119,10 +119,12 @@ class mocker {
 
     mockFromRecordingsArray(params) {
         const key = this.createKey(params)
+        console.log("jwjkfsjdkjskfskfj")
+        console.log(this.recordings.map((item) => item.key))
         const recording = this.recordings.find((item) => item.key === key)
 
         if (!recording) {
-            throw new Error("cannot find mock '" + key + "' with params: '" + JSON.stringify(this.filterParams(params), null, 2) + "'")
+            throw new Error("cannot find mockfdgdfg '" + key + "' with params: '" + JSON.stringify(this.filterParams(params), null, 2) + "'")
         }
 
         return recording.response

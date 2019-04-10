@@ -1,6 +1,17 @@
 'use strict';
 var block = require('./block');
 
+/**
+ * 
+ * EXAMPLE
+ * 
+ * - response:
+        headers:
+            Content-Type: application/vnd.api+json
+            Access-Control-Allow-Credentials: true
+            Access-Control-Allow-Origin: "*"
+        body: $rest.response
+ */
 class _block extends block {
     run() {
 
