@@ -71,7 +71,7 @@ class _block extends block {
                     })
                 } else {
                     // args must be array for mongoose .. if object given put it inside an array
-                    const args = Array.isArray(this.get(action)) ? this.get(action) : [this.get(action)]
+                    const args = Array.isArray(this.get(action)) && action !== "aggregate" ? this.get(action) : [this.get(action)]
                     this.runQuery(model, action, args, (err, result) => {
                         if (err) return reject(err)
                         db.close()
@@ -113,7 +113,7 @@ class _block extends block {
     }
 
     getAction() {
-        const actions = ["find", "findOne", "create", "insertMany", "deleteOne", "update", "updateOne", "findByIdAndUpdate", "findOneAndUpdate"]
+        const actions = ["find", "findOne", "create", "insertMany", "deleteOne", "update", "updateOne", "findByIdAndUpdate", "findOneAndUpdate", "aggregate"]
 
         let foundAction = null
 
@@ -161,9 +161,11 @@ class _block extends block {
     getSchemaObject(str) {
         if      (str == "date")     return Date
         else if (str == "array")    return Array
-        else if (str == "number")    return Number
+        else if (str == "number")   return Number
+        else if (str == "[number]") return [Number]
         else if (str == "objectid") return Schema.Types.ObjectId
         else if (str == "mixed")    return Schema.Types.Mixed
+        else if (str == "[string]") return [String]
         else                        return String
     }
 }
