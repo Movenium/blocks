@@ -27,15 +27,19 @@ class _block extends block {
             mongoose.modelSchemas = {};
         }
 
-        return this.mocker.newPromise((resolve,reject) => {
-            mongoose.connect(this.get("url"), { useNewUrlParser: true }, (err) => {
-                //reject(err)
-            });
+        if (this.exists("schema"))
+            this.createSchema(this.get("collection"), this.get("schema"))
+        else if (this.exists("schemas"))
+            this.createSchemas(this.get("schemas"))
 
-            var db = mongoose.connection;
-            db.on('error', (err) => reject(err))
-            db.once('open', () => {
-                this.makeMongooseQuery(db, resolve, reject)
+        // if block is only used for schema creation
+        if (!this.exists("url") && (this.exists("schema") || this.exists("schemas"))) return
+
+        return this.mocker.newPromise((resolve,reject) => {
+            mongoose.connect(this.get("url"), { useNewUrlParser: true }).then(() => {
+                this.makeMongooseQuery(mongoose.connection, resolve, reject)
+            }, (err) => {
+                reject(err)
             });
         }, this.settings)
     }
@@ -43,11 +47,6 @@ class _block extends block {
     makeMongooseQuery(db, resolve, reject) {
         try {
             // we're connected!
-            if (this.exists("schema"))
-                this.createSchema(this.get("collection"), this.get("schema"))
-            else if (this.exists("schemas"))
-                this.createSchemas(this.get("schemas"))
-
             const action = this.getAction()
 
             if (action) {
