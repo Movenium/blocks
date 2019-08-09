@@ -95,7 +95,7 @@ class mocker {
     }
 
     mock(path, params) {
-
+        
         if (this.type === "collect") return this.mockFromRecordingsArray(params)
 
         const filename = path.endsWith(".json") ? path : this.createFilename(path, params)
@@ -119,12 +119,10 @@ class mocker {
 
     mockFromRecordingsArray(params) {
         const key = this.createKey(params)
-        console.log("jwjkfsjdkjskfskfj")
-        console.log(this.recordings.map((item) => item.key))
         const recording = this.recordings.find((item) => item.key === key)
 
         if (!recording) {
-            throw new Error("cannot find mockfdgdfg '" + key + "' with params: '" + JSON.stringify(this.filterParams(params), null, 2) + "'")
+            throw new Error("cannot find mock recording '" + key + "' with params: '" + JSON.stringify(this.filterParams(params), null, 2) + "'. Keys found "+this.recordings.map((item) => item.key).join(","))
         }
 
         return recording.response

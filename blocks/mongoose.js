@@ -27,21 +27,24 @@ class _block extends block {
             mongoose.modelSchemas = {};
         }
 
-        if (this.exists("schema"))
-            this.createSchema(this.get("collection"), this.get("schema"))
-        else if (this.exists("schemas"))
-            this.createSchemas(this.get("schemas"))
-
         // if block is only used for schema creation
-        if (!this.exists("url") && (this.exists("schema") || this.exists("schemas"))) return
+        if (!this.exists("url") && (this.exists("schema") || this.exists("schemas"))) return this.createAllSchemas()
 
         return this.mocker.newPromise((resolve,reject) => {
+            this.createAllSchemas()
             mongoose.connect(this.get("url"), { useNewUrlParser: true }).then(() => {
                 this.makeMongooseQuery(mongoose.connection, resolve, reject)
             }, (err) => {
                 reject(err)
             });
         }, this.settings)
+    }
+
+    createAllSchemas() {
+        if (this.exists("schema"))
+            this.createSchema(this.get("collection"), this.get("schema"))
+        else if (this.exists("schemas"))
+            this.createSchemas(this.get("schemas"))
     }
 
     makeMongooseQuery(db, resolve, reject) {
