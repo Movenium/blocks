@@ -115,7 +115,7 @@ class _block extends block {
     }
 
     getAction() {
-        const actions = ["find", "findOne", "create", "insertMany", "deleteOne", "update", "updateOne", "findByIdAndUpdate", "findOneAndUpdate", "aggregate"]
+        const actions = ["find", "findOne", "create", "insertMany", "deleteOne", "deleteMany", "update", "updateOne", "findByIdAndUpdate", "findOneAndUpdate", "aggregate"]
 
         let foundAction = null
 
