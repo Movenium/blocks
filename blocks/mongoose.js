@@ -71,6 +71,13 @@ class _block extends block {
                         db.close()
                         resolve(result);
                     })
+                } else if (action === 'drop') {
+                    model.collection.drop().then((res) => {
+                        db.close()
+                        resolve(res)
+                    }, (err) => {
+                        reject(err)
+                    })
                 } else {
                     // args must be array for mongoose .. if object given put it inside an array
                     const args = Array.isArray(this.get(action)) && action !== "aggregate" ? this.get(action) : [this.get(action)]
@@ -115,7 +122,7 @@ class _block extends block {
     }
 
     getAction() {
-        const actions = ["find", "findOne", "create", "insertMany", "deleteOne", "update", "updateOne", "findByIdAndUpdate", "findOneAndUpdate", "aggregate"]
+        const actions = ["find", "findOne", "create", "insertMany", "deleteOne", "deleteMany", "update", "updateOne", "findByIdAndUpdate", "findOneAndUpdate", "aggregate", "drop"]
 
         let foundAction = null
 
