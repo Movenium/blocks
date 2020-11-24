@@ -73,6 +73,7 @@ class _block extends block {
                     })
                 } else if (action === 'drop') {
                     model.collection.drop().then((res) => {
+                        db.close()
                         resolve(res)
                     }, (err) => {
                         reject(err)
