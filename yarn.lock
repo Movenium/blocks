@@ -1039,7 +1039,7 @@ joi@10.x.x:
 
 joi@9.X.X, joi@9.x.x:
   version "9.2.0"
-  resolved "http://registry.npmjs.org/joi/-/joi-9.2.0.tgz#3385ac790192130cbe230e802ec02c9215bbfeda"
+  resolved "https://registry.npmjs.org/joi/-/joi-9.2.0.tgz#3385ac790192130cbe230e802ec02c9215bbfeda"
   dependencies:
     hoek "4.x.x"
     isemail "2.x.x"
@@ -1338,7 +1338,7 @@ minimatch@3.0.4, minimatch@^3.0.4:
 
 minimist@0.0.8:
   version "0.0.8"
-  resolved "http://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz#857fcabfc3397d2625b8228262e86aa7a011b05d"
+  resolved "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz#857fcabfc3397d2625b8228262e86aa7a011b05d"
 
 minimist@~0.0.1:
   version "0.0.10"
