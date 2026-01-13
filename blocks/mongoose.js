@@ -5,6 +5,7 @@ var Schema = mongoose.Schema;
 var yaml = require('node-yaml');
 const isYaml = require("../tools").isYaml
 var version = require('mongoose-version');
+const SAFE_SCHEMA = yaml.schema && yaml.schema.defaultSafe ? yaml.schema.defaultSafe : yaml.DEFAULT_SAFE_SCHEMA
 
 /**
  * EXAMPLE
@@ -32,7 +33,8 @@ class _block extends block {
 
         return this.mocker.newPromise((resolve,reject) => {
             this.createAllSchemas()
-            mongoose.connect(this.get("url"), { useNewUrlParser: true }).then(() => {
+            const connectOptions = this.get("options", {})
+            mongoose.connect(this.get("url"), connectOptions).then(() => {
                 this.makeMongooseQuery(mongoose.connection, resolve, reject)
             }, (err) => {
                 reject(err)
@@ -138,7 +140,7 @@ class _block extends block {
         let schemas
 
         if (isYaml(mixed))
-            schemas = yaml.readSync(this.blocks.rootdir + mixed, {encoding: "utf8", schema: yaml.schema.defaultSafe})
+            schemas = yaml.readSync(this.blocks.rootdir + mixed, {encoding: "utf8", schema: SAFE_SCHEMA})
         else
             schemas = mixed
 
