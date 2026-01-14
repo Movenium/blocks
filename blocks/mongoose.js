@@ -49,69 +49,57 @@ class _block extends block {
             this.createSchemas(this.get("schemas"))
     }
 
-    makeMongooseQuery(db, resolve, reject) {
+    async makeMongooseQuery(db, resolve, reject) {
         try {
-            // we're connected!
             const action = this.getAction()
 
-            if (action) {
-
-                var model = mongoose.model(this.get("collection"));
-                var actionParams = this.get(action)
-
-                if (action == "find" && Array.isArray(actionParams)) {
-                    this.queryBuilder(model, actionParams, (err, result) => {
-                        if (err) return reject(err)
-                        db.close()
-                        resolve(result);
-                    })
-                }
-                else if (this.get("lean", false) && ["find", "findOne"].includes(action)) {
-                    //model[action](this.get(action)).lean().exec((err, result) => {
-                    this.runQueryAndLean(model, action, this.get(action), (err, result) => {
-                        if (err) return reject(err)
-                        db.close()
-                        resolve(result);
-                    })
-                } else if (action === 'drop') {
-                    model.collection.drop().then((res) => {
-                        db.close()
-                        resolve(res)
-                    }, (err) => {
-                        reject(err)
-                    })
-                } else {
-                    // args must be array for mongoose .. if object given put it inside an array
-                    const args = Array.isArray(this.get(action)) && action !== "aggregate" ? this.get(action) : [this.get(action)]
-                    this.runQuery(model, action, args, (err, result) => {
-                        if (err) return reject(err)
-                        db.close()
-
-                        if (this.get("lean", false))
-                            resolve(result.toObject())
-                        else
-                            resolve(result)
-                    })
-                }
-
-            }
-            else
+            if (!action) {
                 resolve()
+                return
+            }
+
+            const model = mongoose.model(this.get("collection"))
+            const actionParams = this.get(action)
+            let result
+
+            if (action === "find" && Array.isArray(actionParams)) {
+                result = await this.queryBuilder(model, actionParams)
+            }
+            else if (this.get("lean", false) && ["find", "findOne"].includes(action)) {
+                result = await this.runQueryAndLean(model, action, this.get(action))
+            }
+            else if (action === 'drop') {
+                result = await model.collection.drop()
+            }
+            else {
+                const args = Array.isArray(this.get(action)) && action !== "aggregate" ? this.get(action) : [this.get(action)]
+                result = await this.runQuery(model, action, args)
+
+                if (this.get("lean", false) && result && typeof result.toObject === "function")
+                    result = result.toObject()
+            }
+
+            resolve(result)
         }
         catch (e) {
             reject(e)
         }
+        finally {
+            db.close()
+        }
     }
 
-    runQueryAndLean(model, action, params, callback) {
-        model[action](params).lean().exec(callback)
+    runQueryAndLean(model, action, params) {
+        return model[action](params).lean().exec()
     }
 
-    runQuery(model, action, params, callback) {
-        model[action](...params, callback)
+    runQuery(model, action, params) {
+        const operation = model[action](...params)
+        if (operation && typeof operation.exec === "function") return operation.exec()
+        return operation
     }
 
-    queryBuilder(model, params, callback) {
+    queryBuilder(model, params) {
         let loop = model.find()
         params.forEach((item) => {
             const keys = Object.keys(item)
@@ -120,7 +108,7 @@ class _block extends block {
             loop = param ? loop[func](param) : loop[func]()
         })
         if (this.get("lean")) loop = loop.lean()
-        loop.exec(callback)
+        return loop.exec()
     }
 
     getAction() {
