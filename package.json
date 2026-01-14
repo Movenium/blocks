@@ -1,6 +1,6 @@
 {
   "name": "@movenium/blocks",
-  "version": "2.0.19-alpha.0",
+  "version": "2.0.19-alpha.1",
   "description": "https://serverless.com/framework/docs/getting-started/",
   "main": "handler.js",
   "engines": {
