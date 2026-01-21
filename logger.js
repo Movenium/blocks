@@ -2,7 +2,7 @@
 
 var isPromise = require("./tools").isPromise
 var mustache = require('mustache');
-var fs = require('file-system');
+var fs = require('fs');
 
 class logger {
 

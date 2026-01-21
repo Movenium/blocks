@@ -2,6 +2,7 @@ var assert = require('assert');
 var blocks = require("../blocks")
 
 var mockRecorder = require("../mocker")
+var md5 = require('md5')
 
 
 describe("errors", function() {
@@ -57,6 +58,29 @@ describe('async', function() {
             assert.equal(response.body, '[{"a":"1","b":"2"}]');
             done();
         });
+    })
+
+    it("request block parses json responses", function(done) {
+        const expectedBody = {foo: "bar"}
+        const normalizedOptions = {
+            url: "https://example.org/api",
+            headers: {'content-type': 'application/json'},
+            body: JSON.stringify(expectedBody),
+            method: "POST"
+        }
+
+        const jsonMocker = new mockRecorder("mock", {type: "collect", recordings: [{
+            key: md5(JSON.stringify([normalizedOptions])),
+            params: [normalizedOptions],
+            response: [null, {statusCode: 200, headers: {'content-type': 'application/json; charset=utf-8'}}, '{"ok":true}']
+        }]});
+
+        (new blocks(undefined, {}, null, jsonMocker)).run([{request: {url: normalizedOptions.url, method: normalizedOptions.method, body: expectedBody}}]).then((response) => {
+            assert.equal(response.statusCode, 200)
+            assert.deepEqual(response.json, {ok: true})
+            assert.equal(response.body, '{"ok":true}')
+            done()
+        }).catch(done)
     })
 
     //mocker.mode = "record"

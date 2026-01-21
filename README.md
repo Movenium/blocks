@@ -1,5 +1,18 @@
 # Usage with serverless.com
 
+## Prerequisites
+
+- Node.js LTS 24 (see `.nvmrc`).
+- npm 11+.
+- Serverless Framework CLI v4 (installed locally via devDependencies).
+
+Use `nvm` (already documented in the project brief) to stay on the expected runtime:
+
+```
+nvm install 24
+nvm use 24
+```
+
 ## install serverless
 
 https://serverless.com/framework/docs/getting-started/
@@ -10,7 +23,10 @@ https://serverless.com/framework/docs/providers/aws/guide/quick-start/
 
 ### tl;dr
 
-`serverless create --template aws-nodejs --path my-service`
+```
+serverless create --template aws-nodejs --path my-service
+npm install --save-dev serverless@^4 serverless-offline@^14
+```
 
 # Install
 
@@ -42,6 +58,10 @@ plugins:
 ``` 
 
 use by typing `serverless offline start`
+
+## Deployment
+
+Create a new release of the blocks npm package.
 
 ## Basic handler.js
 
@@ -183,4 +203,9 @@ describe('all recorded tests', function() {
 test by running
 ```
 npm test
+```
+
+continuous feedback while developing
+```
+npm run test:watch
 ```
