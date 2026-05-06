@@ -25,7 +25,7 @@
   "dependencies": {
     "app-root-dir": "^1.0.2",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.1.4",
+    "mongoose": "^9.1.6",
     "mongoose-version": "^1.1.0",
     "node-yaml": "^4.0.1",
     "redis": "^5.10.0"
