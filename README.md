@@ -59,9 +59,58 @@ plugins:
 
 use by typing `serverless offline start`
 
-## Deployment
+## Publishing a new version
 
-Create a new release of the blocks npm package.
+The package is published to npm as [`@movenium/blocks`](https://www.npmjs.com/package/@movenium/blocks).
+
+Prerequisites (one-time):
+
+- Be a member of the `@movenium` npm org with publish rights.
+- `npm login` with 2FA enabled.
+- Use the Node version pinned in `.nvmrc` (`nvm use`).
+
+Release steps:
+
+1. Make sure you are on `master`, the working tree is clean, and the branch is up to date:
+    ```
+    git checkout master
+    git pull --ff-only
+    git status
+    ```
+2. Verify the build before bumping:
+    ```
+    npm test
+    ```
+3. Bump the version. `npm version` updates `package.json`, creates a commit (e.g. `2.0.20`) and a matching `vX.Y.Z` tag — matching the existing release history.
+    ```
+    npm version patch    # bug/security fix: 2.0.19 -> 2.0.20
+    npm version minor    # backwards-compatible feature
+    npm version major    # breaking change
+    ```
+4. Push the commit and the tag:
+    ```
+    git push --follow-tags
+    ```
+5. Publish to npm (public access is required for scoped packages):
+    ```
+    npm publish --access public
+    ```
+6. Verify the new version is live:
+    ```
+    npm view @movenium/blocks version
+    ```
+
+### Pre-releases (alpha / beta)
+
+For iterative releases use the `prerelease` bump and the matching dist-tag so the new version is not picked up by callers using `latest`:
+
+```
+npm version prerelease --preid=alpha   # 2.0.20 -> 2.0.20-alpha.0
+git push --follow-tags
+npm publish --access public --tag alpha
+```
+
+Install a pre-release with `npm install @movenium/blocks@alpha`.
 
 ## Basic handler.js
 
