@@ -51,7 +51,10 @@ class _block extends block {
         return new Promise((resolve, reject) => {
 
             let headers = {...(this.get("headers", {}) || {})}
-            if (this.exists("bearer")) headers.Authorization = this.get("bearer")
+            if (this.exists("bearer")) {
+                const bearer = this.get("bearer")
+                headers.Authorization = /^bearer /i.test(bearer) ? bearer : `Bearer ${bearer}`
+            }
 
             var options = {
                 url: this.get("url"),// + this.exists("path") ? this.get("path", "") : "",
