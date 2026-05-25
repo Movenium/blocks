@@ -52,6 +52,7 @@ class block {
 
         const promises = []
         for (let key in settings) {
+            if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
 
             if (Array.isArray(settings)) {
                 const ret = this.resolver(settings, key)
