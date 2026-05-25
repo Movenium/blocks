@@ -192,3 +192,49 @@ describe('Settings', function() {
     });
 
 });
+
+describe('Security', function() {
+
+    it('prototype pollution: __proto__ key in settings is ignored', function(done) {
+        const before = Object.prototype.toString
+        const payload = JSON.parse('{"__proto__": {"polluted": true}}')
+        ;(new blocks(undefined, {})).run([{data: payload}]).then(() => {
+            assert.strictEqual(Object.prototype.polluted, undefined, 'Object.prototype should not be polluted')
+            assert.equal(Object.prototype.toString, before)
+            done()
+        }).catch(done)
+    })
+
+    it('prototype pollution: constructor key in settings is ignored', function(done) {
+        const payload = JSON.parse('{"constructor": {"prototype": {"polluted2": true}}}')
+        ;(new blocks(undefined, {})).run([{data: payload}]).then(() => {
+            assert.strictEqual(({}).polluted2, undefined, 'prototype should not be polluted via constructor key')
+            done()
+        }).catch(done)
+    })
+
+    it('mocker: rejects path traversal in mock()', function() {
+        const mocker = new mockRecorder("mock", {})
+        assert.throws(
+            () => mocker.mock('../etc/passwd', []),
+            /directory traversal/
+        )
+    })
+
+    it('mocker: rejects path traversal in record()', function() {
+        const mocker = new mockRecorder("mock", {})
+        assert.throws(
+            () => mocker.record('../etc/passwd', [], {}),
+            /directory traversal/
+        )
+    })
+
+    it('mocker: rejects path traversal in createFilename()', function() {
+        const mocker = new mockRecorder("mock", {})
+        assert.throws(
+            () => mocker.createFilename('../etc', []),
+            /directory traversal/
+        )
+    })
+
+})

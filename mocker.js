@@ -41,6 +41,7 @@ class mocker {
     }
 
     createFilename(path, params) {
+        if (path.includes('..')) throw new Error("Invalid path: directory traversal not allowed")
         return path + "/" + (this.namespace ? this.namespace + "-" : "") + this.createKey(params) + ".json"
     }
 
@@ -84,6 +85,7 @@ class mocker {
             this.recordings.push(JSON.parse(JSON.stringify(data)))
         }
         else {
+            if (path.includes('..')) throw new Error("Invalid path: directory traversal not allowed")
             const filename = path.endsWith(".json") ? path : this.createFilename(path, params)
             console.log("recording to " + filename)
             fs.writeFile(filename, JSON.stringify(data, null, 4), null, () => {})
@@ -95,9 +97,9 @@ class mocker {
     }
 
     mock(path, params) {
-        
         if (this.type === "collect") return this.mockFromRecordingsArray(params)
 
+        if (path.includes('..')) throw new Error("Invalid path: directory traversal not allowed")
         const filename = path.endsWith(".json") ? path : this.createFilename(path, params)
         if (this.debug) {
             console.log("mocking " + filename)
